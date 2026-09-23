@@ -1,0 +1,430 @@
+﻿@using EmployeeManagement.Application.Common.Models
+@using EmployeeManagement.Domain.Enums
+@model PagedResult<EmployeeManagement.Application.Attendance.Models.AttendanceListModel>
+
+@{
+    ViewData["Title"] = "Attendance";
+}
+
+<div class="page-header">
+
+    <div>
+        <h1>Attendance</h1>
+        <p>
+            Manage employee attendance and working hours.
+        </p>
+    </div>
+
+    <a asp-action="Create"
+       class="btn btn-primary">
+
+        <i class="bi bi-plus-lg me-1"></i>
+        Add Attendance
+
+    </a>
+
+</div>
+
+
+<!-- Filters -->
+
+<div class="card shadow-sm border-0 mb-4">
+
+    <div class="card-body">
+
+        <form asp-action="Index"
+              method="get">
+
+            <div class="row g-3 align-items-end">
+
+                <div class="col-lg-4">
+
+                    <label class="form-label">
+                        Search
+                    </label>
+
+                    <input name="search"
+                           value="@ViewBag.Search"
+                           class="form-control"
+                           placeholder="Employee number or name..." />
+
+                </div>
+                <div class="col-md-3 col-lg-2">
+
+                    <label class="form-label">
+                        From
+                    </label>
+
+                    <input type="date"
+                           name="dateFrom"
+                           value="@ViewBag.DateFromValue"
+                           class="form-control" />
+
+                </div>
+
+                <div class="col-md-3 col-lg-2">
+
+                    <label class="form-label">
+                        To
+                    </label>
+
+                    <input type="date"
+                           name="dateTo"
+                           value="@ViewBag.DateToValue"
+                           class="form-control" />
+
+                </div>
+
+                <div class="col-md-3 col-lg-2">
+
+                    <label class="form-label">
+                        Status
+                    </label>
+
+                    <select name="status"
+                            class="form-select">
+
+                        <option value="">
+                            All
+                        </option>
+
+                        @foreach (var status
+                            in Enum.GetValues<AttendanceStatus>())
+                        {
+                            <option value="@status"
+                                    selected="@(
+                                    ViewBag.Status?.ToString()
+                                    == status.ToString()
+                                                                )">
+
+                                @status
+
+                            </option>
+                        }
+
+                    </select>
+
+                </div>
+
+                <div class="col-md-3 col-lg-2">
+
+                    <button type="submit"
+                            class="btn btn-primary w-100">
+
+                        <i class="bi bi-search me-1"></i>
+                        Search
+
+                    </button>
+
+                </div>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+
+<!-- Attendance Table -->
+
+<div class="card shadow-sm border-0">
+
+    <div class="card-body">
+
+        <div class="table-responsive">
+
+            <table class="table align-middle">
+
+                <thead>
+
+                    <tr>
+
+                        <th>Date</th>
+
+                        <th>Employee</th>
+
+                        <th>Time In</th>
+
+                        <th>Time Out</th>
+
+                        <th>Regular</th>
+
+                        <th>OT</th>
+
+                        <th>Late</th>
+
+                        <th>Status</th>
+
+                        <th class="text-end">
+                            Actions
+                        </th>
+
+                    </tr>
+
+                </thead>
+
+                <tbody>
+
+                    @if (!Model.Items.Any())
+                    {
+                        <tr>
+
+                            <td colspan="9"
+                                class="text-center py-5">
+
+                                <i class="bi bi-calendar-x fs-1
+                                    text-muted d-block mb-2">
+                                </i>
+
+                                <span class="text-muted">
+                                    No attendance records found.
+                                </span>
+
+                            </td>
+
+                        </tr>
+                    }
+                    else
+                    {
+                        foreach (var item in Model.Items)
+                        {
+                            <tr>
+
+                                <td>
+                                    @item.AttendanceDate.ToString(
+                                        "MMM dd, yyyy")
+                                </td>
+
+                                <td>
+
+                                    <div class="fw-semibold">
+                                        @item.EmployeeName
+                                    </div>
+
+                                    <small class="text-muted">
+                                        @item.EmployeeNumber
+                                    </small>
+
+                                </td>
+
+                                <td>
+                                    @(item.TimeIn?.ToString(@"hh\:mm")
+                                        ?? "—")
+                                </td>
+
+                                <td>
+                                    @(item.TimeOut?.ToString(@"hh\:mm")
+                                        ?? "—")
+                                </td>
+
+                                <td>
+                                    @item.RegularHours.ToString("0.00")h
+                                </td>
+
+                                <td>
+                                    @item.OvertimeHours.ToString("0.00")h
+                                </td>
+
+                                <td>
+
+                                    @if (item.LateMinutes > 0)
+                                    {
+                                        <span class="text-danger">
+                                            @item.LateMinutes min
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">
+                                            —
+                                        </span>
+                                    }
+
+                                </td>
+
+                                <td>
+
+                                    @switch (item.Status)
+                                    {
+                                        case "Present":
+
+                                            <span class="badge
+                                                bg-success-subtle
+                                                text-success">
+                                                Present
+                                            </span>
+
+                                            break;
+
+                                        case "Late":
+
+                                            <span class="badge
+                                                bg-warning-subtle
+                                                text-warning">
+                                                Late
+                                            </span>
+
+                                            break;
+
+                                        case "Absent":
+
+                                            <span class="badge
+                                                bg-danger-subtle
+                                                text-danger">
+                                                Absent
+                                            </span>
+
+                                            break;
+
+                                        case "OnLeave":
+
+                                            <span class="badge
+                                                bg-info-subtle
+                                                text-info">
+                                                On Leave
+                                            </span>
+
+                                            break;
+
+                                        default:
+
+                                            <span class="badge
+                                                bg-secondary-subtle
+                                                text-secondary">
+                                                @item.Status
+                                            </span>
+
+                                            break;
+                                    }
+
+                                </td>
+
+                                <td class="text-end">
+
+                                    <a asp-action="Details"
+                                       asp-route-id="@item.Id"
+                                       class="btn btn-sm btn-light">
+
+                                        <i class="bi bi-eye"></i>
+
+                                    </a>
+
+                                    <a asp-action="Edit"
+                                       asp-route-id="@item.Id"
+                                       class="btn btn-sm btn-light">
+
+                                        <i class="bi bi-pencil"></i>
+
+                                    </a>
+
+                                    <form asp-action="Delete"
+                                          asp-route-id="@item.Id"
+                                          method="post"
+                                          class="d-inline"
+                                          onsubmit="return confirm('Delete this attendance record?');">
+
+                                        @Html.AntiForgeryToken()
+
+                                        <button type="submit"
+                                                class="btn btn-sm btn-light text-danger">
+
+                                            <i class="bi bi-trash"></i>
+
+                                        </button>
+
+                                    </form>
+
+                                </td>
+
+                            </tr>
+                        }
+                    }
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+
+        <!-- Pagination -->
+        @if (Model.TotalPages > 1)
+        {
+            <nav class="mt-4">
+
+                <ul class="pagination
+                    justify-content-end">
+
+                    <li class="page-item
+                        @(Model.HasPrevious
+                            ? ""
+                            : "disabled")">
+
+                        <a class="page-link"
+                           asp-action="Index"
+                           asp-route-page="@(Model.PageNumber - 1)"
+                           asp-route-search="@ViewBag.Search"
+                           asp-route-dateFrom="@ViewBag.DateFrom"
+                           asp-route-dateTo="@ViewBag.DateTo"
+                           asp-route-status="@ViewBag.Status">
+
+                            Previous
+
+                        </a>
+
+                    </li>
+
+                    @for (
+                        var pageNumber = 1;
+                        pageNumber <= Model.TotalPages;
+                        pageNumber++)
+                    {
+                        <li class="page-item
+                            @(pageNumber == Model.PageNumber
+                                ? "active"
+                                : "")">
+
+                            <a class="page-link"
+                               asp-action="Index"
+                               asp-route-page="@pageNumber"
+                               asp-route-search="@ViewBag.Search"
+                               asp-route-dateFrom="@ViewBag.DateFrom"
+                               asp-route-dateTo="@ViewBag.DateTo"
+                               asp-route-status="@ViewBag.Status">
+
+                                @pageNumber
+
+                            </a>
+
+                        </li>
+                    }
+
+                    <li class="page-item
+                        @(Model.HasNext
+                            ? ""
+                            : "disabled")">
+
+                        <a class="page-link"
+                           asp-action="Index"
+                           asp-route-page="@(Model.PageNumber + 1)"
+                           asp-route-search="@ViewBag.Search"
+                           asp-route-dateFrom="@ViewBag.DateFrom"
+                           asp-route-dateTo="@ViewBag.DateTo"
+                           asp-route-status="@ViewBag.Status">
+
+                            Next
+
+                        </a>
+
+                    </li>
+
+                </ul>
+
+            </nav>
+        }
+
+    </div>
+
+</div>

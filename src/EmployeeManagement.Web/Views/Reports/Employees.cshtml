@@ -1,0 +1,156 @@
+﻿@{
+    ViewData["Title"] = "Employee Reports";
+}
+
+<div class="container-fluid py-4">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+
+        <div>
+            <h2 class="fw-bold mb-1">
+                <i class="bi bi-bar-chart-line me-2"></i>
+                Employee Reports
+            </h2>
+
+            <p class="text-muted mb-0">
+                Generate employee reports and summaries.
+            </p>
+        </div>
+
+    </div>
+
+
+    <div class="row g-4">
+
+        <!-- Employee Master List -->
+        <div class="col-md-6 col-xl-4">
+
+            <div class="card border-0 shadow-sm h-100">
+
+                <div class="card-body">
+
+                    <div class="mb-3">
+
+                        <div class="rounded-circle bg-primary bg-opacity-10
+                            text-primary d-flex align-items-center
+                            justify-content-center"
+                             style="width:50px;height:50px;">
+
+                            <i class="bi bi-people fs-4"></i>
+
+                        </div>
+
+                    </div>
+
+                    <h5 class="fw-bold">
+                        Employee Master List
+                    </h5>
+
+                    <p class="text-muted">
+                        Complete list of employees including
+                        department, position, status and employment type.
+                    </p>
+
+                    <a asp-controller="Reports"
+                       asp-action="EmployeeMasterList"
+                       class="btn btn-primary">
+
+                        <i class="bi bi-file-earmark-text me-1"></i>
+
+                        Generate Report
+
+                    </a>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- Department Report -->
+        <div class="col-md-6 col-xl-4">
+
+            <div class="card border-0 shadow-sm h-100">
+
+                <div class="card-body">
+
+                    <div class="mb-3">
+
+                        <div class="rounded-circle bg-success bg-opacity-10
+                            text-success d-flex align-items-center
+                            justify-content-center"
+                             style="width:50px;height:50px;">
+
+                            <i class="bi bi-building fs-4"></i>
+
+                        </div>
+
+                    </div>
+
+                    <h5 class="fw-bold">
+                        Employees by Department
+                    </h5>
+
+                    <p class="text-muted">
+                        View employees grouped by department.
+                    </p>
+
+                    <button class="btn btn-success"
+                            disabled>
+
+                        Coming Soon
+
+                    </button>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- Status Report -->
+        <div class="col-md-6 col-xl-4">
+
+            <div class="card border-0 shadow-sm h-100">
+
+                <div class="card-body">
+
+                    <div class="mb-3">
+
+                        <div class="rounded-circle bg-warning bg-opacity-10
+                            text-warning d-flex align-items-center
+                            justify-content-center"
+                             style="width:50px;height:50px;">
+
+                            <i class="bi bi-person-check fs-4"></i>
+
+                        </div>
+
+                    </div>
+
+                    <h5 class="fw-bold">
+                        Employee Status Report
+                    </h5>
+
+                    <p class="text-muted">
+                        View employees grouped by employment status.
+                    </p>
+
+                    <button class="btn btn-warning"
+                            disabled>
+
+                        Coming Soon
+
+                    </button>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>

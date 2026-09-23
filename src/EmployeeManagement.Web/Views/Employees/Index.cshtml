@@ -1,0 +1,1010 @@
+﻿@using EmployeeManagement.Application.Common
+@using EmployeeManagement.Application.Departments.Models
+@using EmployeeManagement.Application.Employees.Models
+@using EmployeeManagement.Application.Positions.Models
+@using EmployeeManagement.Domain.Enums
+@using EmployeeManagement.Application.Common.Models;
+@model PagedResult<EmployeeListModel>
+
+@{
+    ViewData["Title"] = "Employees";
+
+    var search = ViewBag.Search as string ?? string.Empty;
+
+    var departmentId = ViewBag.DepartmentId as int?;
+    var positionId = ViewBag.PositionId as int?;
+
+    var status = ViewBag.Status as EmployeeStatus?;
+    var employmentType = ViewBag.EmploymentType as EmploymentType?;
+
+    var hireDateFrom = ViewBag.HireDateFrom as DateTime?;
+    var hireDateTo = ViewBag.HireDateTo as DateTime?;
+
+    var departments = ViewBag.Departments
+        as IReadOnlyList<DepartmentLookup>
+        ?? Array.Empty<DepartmentLookup>();
+
+    var positions = ViewBag.Positions
+        as IReadOnlyList<PositionLookup>
+        ?? Array.Empty<PositionLookup>();
+}
+
+<div class="container-fluid">
+
+    <!-- ============================= -->
+    <!-- Page Header -->
+    <!-- ============================= -->
+    <div class="alert alert-info">
+    Position count: @positions.Count
+</div>
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+
+        <div>
+            <h2 class="fw-bold mb-1">
+                <i class="bi bi-people me-2"></i>
+                Employees
+            </h2>
+
+            <p class="text-muted mb-0">
+                Manage employee information, employment details and records.
+            </p>
+        </div>
+
+        <div class="d-flex gap-2">
+
+            <a asp-controller="Employees"
+               asp-action="Create"
+               class="btn btn-primary">
+
+                <i class="bi bi-plus-lg me-1"></i>
+                Add Employee
+
+            </a>
+
+        </div>
+
+    </div>
+
+
+    <!-- ============================= -->
+    <!-- Search / Filters -->
+    <!-- ============================= -->
+
+    <div class="card shadow-sm border-0 mb-4">
+
+        <div class="card-header bg-white border-0 py-3">
+
+            <div class="d-flex align-items-center">
+
+                <i class="bi bi-funnel me-2 text-primary"></i>
+
+                <h5 class="mb-0 fw-semibold">
+                    Search & Filters
+                </h5>
+
+            </div>
+
+        </div>
+
+        <div class="card-body">
+
+            <form asp-controller="Employees"
+                  asp-action="Index"
+                  method="get">
+
+                <div class="row g-3">
+
+                    <!-- Search -->
+
+                    <div class="col-md-6 col-lg-4">
+
+                        <label class="form-label fw-semibold">
+                            Search
+                        </label>
+
+                        <input type="text"
+                               name="Search"
+                               value="@search"
+                               class="form-control"
+                               placeholder="Employee number, name or email..." />
+
+                    </div>
+
+
+                    <!-- Department -->
+
+                    <div class="col-md-6 col-lg-2">
+
+                        <label class="form-label fw-semibold">
+                            Department
+                        </label>
+
+                        <select name="DepartmentId"
+                                id="DepartmentId"
+                                class="form-select">
+
+                            <option value="">
+                                All Departments
+                            </option>
+
+                            @foreach (var department in departments)
+                            {
+                                if (departmentId == department.Id)
+                                {
+                                    <option value="@department.Id" selected>
+                                        @department.Name
+                                    </option>
+                                }
+                                else
+                                {
+                                    <option value="@department.Id">
+                                        @department.Name
+                                    </option>
+                                }
+                            }
+
+                        </select>
+
+                    </div>
+
+
+                    <!-- Position -->
+
+                    <div class="col-md-6 col-lg-2">
+
+                        <label class="form-label fw-semibold">
+                            Position
+                        </label>
+
+                        <select name="PositionId"
+                                id="PositionId"
+                                class="form-select">
+
+                            <option value="">
+                                All Positions
+                            </option>
+
+                            @foreach (var position in positions)
+                            {
+                                if (positionId == position.Id)
+                                {
+                                    <option value="@position.Id"
+                                            data-department-id="@position.DepartmentId"
+                                            selected>
+                                        @position.Name
+                                    </option>
+                                }
+                                else
+                                {
+                                    <option value="@position.Id"
+                                            data-department-id="@position.DepartmentId">
+                                        @position.Name
+                                    </option>
+                                }
+                            }
+
+                        </select>
+
+                    </div>
+
+
+                    <!-- Employment Type -->
+
+                    <div class="col-md-6 col-lg-2">
+
+                        <label class="form-label fw-semibold">
+                            Employment Type
+                        </label>
+
+                        <select name="EmploymentType"
+                                class="form-select">
+
+                            <option value="">
+                                All Types
+                            </option>
+
+                            @foreach (EmploymentType item in Enum.GetValues<EmploymentType>())
+                            {
+                                if (employmentType == item)
+                                {
+                                    <option value="@((int)item)" selected>
+                                        @item
+                                    </option>
+                                }
+                                else
+                                {
+                                    <option value="@((int)item)">
+                                        @item
+                                    </option>
+                                }
+                            }
+
+                        </select>
+
+                    </div>
+
+
+                    <!-- Status -->
+
+                    <div class="col-md-6 col-lg-2">
+
+                        <label class="form-label fw-semibold">
+                            Status
+                        </label>
+
+                        <select name="Status"
+                                class="form-select">
+
+                            <option value="">
+                                All Status
+                            </option>
+
+                            @foreach (EmployeeStatus item in Enum.GetValues<EmployeeStatus>())
+                            {
+                                if (status == item)
+                                {
+                                    <option value="@((int)item)" selected>
+                                        @item
+                                    </option>
+                                }
+                                else
+                                {
+                                    <option value="@((int)item)">
+                                        @item
+                                    </option>
+                                }
+                            }
+
+                        </select>
+
+                    </div>
+
+
+                    <!-- Hire Date From -->
+
+                    <div class="col-md-6 col-lg-3">
+
+                        <label class="form-label fw-semibold">
+                            Hire Date From
+                        </label>
+
+                        <input type="date"
+                               name="HireDateFrom"
+                               value="@(hireDateFrom?.ToString("yyyy-MM-dd"))"
+                               class="form-control" />
+
+                    </div>
+
+
+                    <!-- Hire Date To -->
+
+                    <div class="col-md-6 col-lg-3">
+
+                        <label class="form-label fw-semibold">
+                            Hire Date To
+                        </label>
+
+                        <input type="date"
+                               name="HireDateTo"
+                               value="@(hireDateTo?.ToString("yyyy-MM-dd"))"
+                               class="form-control" />
+
+                    </div>
+
+
+                    <!-- Buttons -->
+
+                    <div class="col-md-12 col-lg-6 d-flex align-items-end gap-2">
+
+                        <button type="submit"
+                                class="btn btn-primary">
+
+                            <i class="bi bi-search me-1"></i>
+                            Search
+
+                        </button>
+
+                        <a asp-controller="Employees"
+                           asp-action="Index"
+                           class="btn btn-outline-secondary">
+
+                            <i class="bi bi-arrow-clockwise me-1"></i>
+                            Reset
+
+                        </a>
+
+                    </div>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+
+    <!-- ============================= -->
+    <!-- Report Actions -->
+    <!-- ============================= -->
+
+    <div class="card shadow-sm border-0 mb-4">
+
+        <div class="card-body">
+
+            <div class="d-flex justify-content-between align-items-center">
+
+                <div>
+
+                    <h5 class="mb-1 fw-semibold">
+                        Employee Reports
+                    </h5>
+
+                    <small class="text-muted">
+                        Generate reports using the current filters.
+                    </small>
+
+                </div>
+
+                <div class="d-flex gap-2">
+
+                    <!-- PDF -->
+
+                    <form asp-controller="Employees"
+                          asp-action="EmployeeMasterReport"
+                          method="get"
+                          target="_blank">
+
+                        <input type="hidden"
+                               name="Search"
+                               value="@search" />
+
+                        <input type="hidden"
+                               name="DepartmentId"
+                               value="@departmentId" />
+
+                        <input type="hidden"
+                               name="PositionId"
+                               value="@positionId" />
+
+                        <input type="hidden"
+                               name="EmploymentType"
+                               value="@employmentType" />
+
+                        <input type="hidden"
+                               name="Status"
+                               value="@status" />
+
+                        <input type="hidden"
+                               name="HireDateFrom"
+                               value="@(hireDateFrom?.ToString("yyyy-MM-dd"))" />
+
+                        <input type="hidden"
+                               name="HireDateTo"
+                               value="@(hireDateTo?.ToString("yyyy-MM-dd"))" />
+
+                        <button type="submit"
+                                class="btn btn-danger">
+
+                            <i class="bi bi-file-earmark-pdf me-1"></i>
+                            Employee Report
+
+                        </button>
+
+                    </form>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ============================= -->
+    <!-- Employee Table -->
+    <!-- ============================= -->
+
+    <div class="card shadow-sm border-0">
+
+        <div class="card-header bg-white border-0 py-3">
+
+            <div class="d-flex justify-content-between align-items-center">
+
+                <div>
+
+                    <h5 class="mb-0 fw-semibold">
+                        Employee List
+                    </h5>
+
+                    <small class="text-muted">
+                        @Model.TotalCount employee(s) found
+                    </small>
+
+                </div>
+
+                <div>
+
+                    <span class="badge bg-light text-dark border">
+
+                        Page @Model.PageNumber
+                        of
+                        @Model.TotalPages
+
+                    </span>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="card-body p-0">
+
+            <div class="table-responsive">
+
+                <table class="table table-hover align-middle mb-0">
+
+                    <thead class="table-light">
+
+                        <tr>
+
+                            <th class="ps-4">
+                                Employee
+                            </th>
+
+                            <th>
+                                Email
+                            </th>
+
+                            <th>
+                                Department
+                            </th>
+
+                            <th>
+                                Position
+                            </th>
+
+                            <th>
+                                Employment
+                            </th>
+
+                            <th>
+                                Status
+                            </th>
+
+                            <th>
+                                Hire Date
+                            </th>
+
+                            <th class="text-end">
+                                Salary
+                            </th>
+
+                            <th class="text-end pe-4">
+                                Actions
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                        @if (Model.Items.Any())
+                        {
+                            foreach (var employee in Model.Items)
+                            {
+                                <tr>
+
+                                    <!-- Employee -->
+
+                                    <td class="ps-4">
+
+                                        <div class="d-flex align-items-center">
+
+                                            @if (!string.IsNullOrWhiteSpace(employee.ProfileImage))
+                                            {
+                                                <img src="@employee.ProfileImage"
+                                                     alt="@employee.FullName"
+                                                     class="rounded-circle me-3"
+                                                     style="width:45px;height:45px;object-fit:cover;" />
+                                            }
+                                            else
+                                            {
+                                                <div class="rounded-circle bg-primary text-white
+                                                            d-flex align-items-center justify-content-center
+                                                            me-3"
+                                                     style="width:45px;height:45px;">
+
+                                                    @(employee.FirstName?.FirstOrDefault().ToString().ToUpper())
+
+                                                </div>
+                                            }
+
+                                            <div>
+
+                                                <div class="fw-semibold">
+
+                                                    @employee.FullName
+
+                                                </div>
+
+                                                <small class="text-muted">
+
+                                                    @employee.EmployeeNumber
+
+                                                </small>
+
+                                            </div>
+
+                                        </div>
+
+                                    </td>
+
+
+                                    <!-- Email -->
+
+                                    <td>
+
+                                        @if (!string.IsNullOrWhiteSpace(employee.Email))
+                                        {
+                                            <span>
+                                                @employee.Email
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">
+                                                N/A
+                                            </span>
+                                        }
+
+                                    </td>
+
+
+                                    <!-- Department -->
+
+                                    <td>
+
+                                        <span class="fw-medium">
+
+                                            @employee.DepartmentName
+
+                                        </span>
+
+                                    </td>
+
+
+                                    <!-- Position -->
+
+                                    <td>
+
+                                        <span class="fw-medium">
+
+                                            @employee.PositionName
+
+                                        </span>
+
+                                    </td>
+
+
+                                    <!-- Employment -->
+
+                                    <td>
+
+                                        @switch (employee.EmploymentType)
+                                        {
+                                            case EmploymentType.Regular:
+                                                <span class="badge bg-success-subtle text-success">
+                                                    Regular
+                                                </span>
+                                                break;
+
+                                            case EmploymentType.Probationary:
+                                                <span class="badge bg-warning-subtle text-warning">
+                                                    Probationary
+                                                </span>
+                                                break;
+
+                                            case EmploymentType.Contractual:
+                                                <span class="badge bg-info-subtle text-info">
+                                                    Contractual
+                                                </span>
+                                                break;
+
+                                            case EmploymentType.PartTime:
+                                                <span class="badge bg-secondary-subtle text-secondary">
+                                                    Part-Time
+                                                </span>
+                                                break;
+
+                                            case EmploymentType.Temporary:
+                                                <span class="badge bg-dark-subtle text-dark">
+                                                    Temporary
+                                                </span>
+                                                break;
+
+                                            case EmploymentType.Intern:
+                                                <span class="badge bg-primary-subtle text-primary">
+                                                    Intern
+                                                </span>
+                                                break;
+
+                                            default:
+                                                <span class="badge bg-secondary">
+                                                    N/A
+                                                </span>
+                                                break;
+                                        }
+
+                                    </td>
+
+
+                                    <!-- Status -->
+
+                                    <td>
+
+                                        @switch (employee.Status)
+                                        {
+                                            case EmployeeStatus.Active:
+                                                <span class="badge bg-success">
+                                                    Active
+                                                </span>
+                                                break;
+
+                                            case EmployeeStatus.Inactive:
+                                                <span class="badge bg-secondary">
+                                                    Inactive
+                                                </span>
+                                                break;
+
+                                            case EmployeeStatus.OnLeave:
+                                                <span class="badge bg-warning text-dark">
+                                                    On Leave
+                                                </span>
+                                                break;
+
+                                            case EmployeeStatus.Resigned:
+                                                <span class="badge bg-info">
+                                                    Resigned
+                                                </span>
+                                                break;
+
+                                            case EmployeeStatus.Terminated:
+                                                <span class="badge bg-danger">
+                                                    Terminated
+                                                </span>
+                                                break;
+
+                                            default:
+                                                <span class="badge bg-secondary">
+                                                    N/A
+                                                </span>
+                                                break;
+                                        }
+
+                                    </td>
+
+
+                                    <!-- Hire Date -->
+
+                                    <td>
+
+                                        @employee.HireDate.ToString("dd-MMM-yyyy")
+
+                                    </td>
+
+
+                                    <!-- Salary -->
+
+                                    <td class="text-end">
+
+                                        @employee.BasicSalary.ToString("N2")
+
+                                    </td>
+
+
+                                    <!-- Actions -->
+
+                                    <td class="text-end pe-4">
+
+                                        <div class="btn-group">
+
+                                            <a asp-controller="Employees"
+                                               asp-action="Details"
+                                               asp-route-id="@employee.Id"
+                                               class="btn btn-sm btn-outline-primary"
+                                               title="View">
+
+                                                <i class="bi bi-eye"></i>
+
+                                            </a>
+
+
+                                            <a asp-controller="Employees"
+                                               asp-action="Edit"
+                                               asp-route-id="@employee.Id"
+                                               class="btn btn-sm btn-outline-secondary"
+                                               title="Edit">
+
+                                                <i class="bi bi-pencil"></i>
+
+                                            </a>
+
+
+                                            <a asp-controller="Employees"
+                                               asp-action="Delete"
+                                               asp-route-id="@employee.Id"
+                                               class="btn btn-sm btn-outline-danger"
+                                               title="Delete">
+
+                                                <i class="bi bi-trash"></i>
+
+                                            </a>
+
+                                        </div>
+
+                                    </td>
+
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+
+                                <td colspan="9"
+                                    class="text-center py-5">
+
+                                    <div class="text-muted">
+
+                                        <i class="bi bi-people fs-1 d-block mb-3"></i>
+
+                                        <h5>
+                                            No employees found
+                                        </h5>
+
+                                        <p class="mb-0">
+                                            Try changing your search or filter criteria.
+                                        </p>
+
+                                    </div>
+
+                                </td>
+
+                            </tr>
+                        }
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+
+        <!-- ============================= -->
+        <!-- Pagination -->
+        <!-- ============================= -->
+
+        @if (Model.TotalPages > 1)
+        {
+            <div class="card-footer bg-white border-0">
+
+                <div class="d-flex justify-content-between align-items-center">
+
+                    <div class="text-muted">
+
+                        Showing
+
+                        <strong>
+                            @(((Model.PageNumber - 1) * Model.PageSize) + 1)
+                        </strong>
+
+                        to
+
+                        <strong>
+                            @(Math.Min(
+                                Model.PageNumber * Model.PageSize,
+                                Model.TotalCount))
+                        </strong>
+
+                        of
+
+                        <strong>
+                            @Model.TotalCount
+                        </strong>
+
+                        employees
+
+                    </div>
+
+
+                    <nav>
+
+                        <ul class="pagination mb-0">
+
+                            <!-- Previous -->
+
+                            <li class="page-item @(Model.HasPrevious ? "" : "disabled")">
+
+                                @if (Model.HasPrevious)
+                                {
+                                    <a class="page-link"
+                                       asp-controller="Employees"
+                                       asp-action="Index"
+                                       asp-route-PageNumber="@(Model.PageNumber - 1)"
+                                       asp-route-Search="@search"
+                                       asp-route-DepartmentId="@departmentId"
+                                       asp-route-PositionId="@positionId"
+                                       asp-route-EmploymentType="@employmentType"
+                                       asp-route-Status="@status"
+                                       asp-route-HireDateFrom="@(hireDateFrom?.ToString("yyyy-MM-dd"))"
+                                       asp-route-HireDateTo="@(hireDateTo?.ToString("yyyy-MM-dd"))">
+
+                                        <i class="bi bi-chevron-left"></i>
+
+                                    </a>
+                                }
+                                else
+                                {
+                                    <span class="page-link">
+                                        <i class="bi bi-chevron-left"></i>
+                                    </span>
+                                }
+
+                            </li>
+
+
+                            <!-- Page Numbers -->
+
+                           @for (var pageNumber = 1; pageNumber <= Model.TotalPages; pageNumber++)
+{
+    <li class="page-item @(pageNumber == Model.PageNumber ? "active" : "")">
+
+        <a class="page-link"
+           asp-controller="Employees"
+           asp-action="Index"
+           asp-route-PageNumber="@pageNumber"
+           asp-route-Search="@search"
+           asp-route-DepartmentId="@departmentId"
+           asp-route-PositionId="@positionId"
+           asp-route-EmploymentType="@employmentType"
+           asp-route-Status="@status"
+           asp-route-HireDateFrom="@(hireDateFrom?.ToString("yyyy-MM-dd"))"
+           asp-route-HireDateTo="@(hireDateTo?.ToString("yyyy-MM-dd"))">
+
+            @pageNumber
+
+        </a>
+
+    </li>
+}
+
+
+                            <!-- Next -->
+
+                            <li class="page-item @(Model.HasNext ? "" : "disabled")">
+
+                                @if (Model.HasNext)
+                                {
+                                    <a class="page-link"
+                                       asp-controller="Employees"
+                                       asp-action="Index"
+                                       asp-route-PageNumber="@(Model.PageNumber + 1)"
+                                       asp-route-Search="@search"
+                                       asp-route-DepartmentId="@departmentId"
+                                       asp-route-PositionId="@positionId"
+                                       asp-route-EmploymentType="@employmentType"
+                                       asp-route-Status="@status"
+                                       asp-route-HireDateFrom="@(hireDateFrom?.ToString("yyyy-MM-dd"))"
+                                       asp-route-HireDateTo="@(hireDateTo?.ToString("yyyy-MM-dd"))">
+
+                                        <i class="bi bi-chevron-right"></i>
+
+                                    </a>
+                                }
+                                else
+                                {
+                                    <span class="page-link">
+                                        <i class="bi bi-chevron-right"></i>
+                                    </span>
+                                }
+
+                            </li>
+
+                        </ul>
+
+                    </nav>
+
+                </div>
+
+            </div>
+        }
+
+    </div>
+
+</div>
+
+
+@section Scripts {
+
+    <script>
+
+        document.addEventListener("DOMContentLoaded", function () {
+
+            const departmentSelect =
+                document.getElementById("DepartmentId");
+
+            const positionSelect =
+                document.getElementById("PositionId");
+
+
+            if (!departmentSelect || !positionSelect) {
+                return;
+            }
+
+
+            function filterPositions() {
+
+                const departmentId =
+                    departmentSelect.value;
+
+                const options =
+                    positionSelect.querySelectorAll("option");
+
+
+                options.forEach(function (option) {
+
+                    // Keep "All Positions" visible
+                    if (!option.value) {
+                        option.hidden = false;
+                        return;
+                    }
+
+
+                    const optionDepartmentId =
+                        option.getAttribute("data-department-id");
+
+
+                    if (!departmentId ||
+                        optionDepartmentId === departmentId) {
+
+                        option.hidden = false;
+
+                    }
+                    else {
+
+                        option.hidden = true;
+
+                        // Clear selection if it no longer belongs
+                        if (option.selected) {
+                            positionSelect.value = "";
+                        }
+
+                    }
+
+                });
+
+            }
+
+
+            departmentSelect.addEventListener(
+                "change",
+                filterPositions
+            );
+
+
+            // Run when page loads
+            filterPositions();
+
+        });
+
+    </script>
+
+}

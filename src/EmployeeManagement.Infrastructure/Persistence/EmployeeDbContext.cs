@@ -26,8 +26,11 @@ public class EmployeeDbContext : DbContext
     public DbSet<LeaveRequest> LeaveRequests =>
         Set<LeaveRequest>();
 
+    public DbSet<LeaveBalance> LeaveBalances => Set<LeaveBalance>();
+
     public DbSet<Payroll> Payrolls =>
         Set<Payroll>();
+
 
     protected override void OnModelCreating(
         ModelBuilder modelBuilder)
@@ -85,5 +88,51 @@ public class EmployeeDbContext : DbContext
             .WithMany(x => x.Payrolls)
             .HasForeignKey(x => x.EmployeeId)
             .OnDelete(DeleteBehavior.Cascade);
+        modelBuilder.Entity<Attendance>()
+            .HasIndex(x =>
+                new
+                {
+                    x.EmployeeId,
+                    x.AttendanceDate
+                })
+            .IsUnique()
+            .HasFilter("[IsDeleted] = 0");
+
+        modelBuilder.Entity<LeaveRequest>()
+            .HasOne(x => x.Employee)
+            .WithMany(x => x.LeaveRequests)
+            .HasForeignKey(x => x.EmployeeId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<LeaveBalance>()
+            .HasOne(x => x.Employee)
+            .WithMany()
+            .HasForeignKey(x => x.EmployeeId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<LeaveBalance>()
+            .HasIndex(x => new
+            {
+                x.EmployeeId,
+                x.Year,
+                x.LeaveType
+            })
+            .IsUnique()
+            .HasFilter("[IsDeleted] = 0");
+
+        modelBuilder.Entity<Employee>()
+            .HasIndex(x => x.HireDate);
+
+        modelBuilder.Entity<Employee>()
+            .HasIndex(x => x.Status);
+
+        modelBuilder.Entity<Employee>()
+            .HasIndex(x => x.EmploymentType);
+
+        modelBuilder.Entity<Employee>()
+            .HasIndex(x => x.DepartmentId);
+
+        modelBuilder.Entity<Employee>()
+            .HasIndex(x => x.PositionId);
     }
 }

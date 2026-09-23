@@ -1,4 +1,5 @@
 ﻿using EmployeeManagement.Domain.Common;
+using EmployeeManagement.Domain.Enums;
 
 namespace EmployeeManagement.Domain.Entities;
 
@@ -20,7 +21,7 @@ public class Attendance : AuditableEntity
 
     public int UndertimeMinutes { get; set; }
 
-    public string Status { get; set; } = "Present";
+    public AttendanceStatus Status { get; set; }
 
     public Employee Employee { get; set; } = null!;
 }

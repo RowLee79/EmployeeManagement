@@ -1,0 +1,293 @@
+﻿@using Microsoft.AspNetCore.Identity
+@using EmployeeManagement.Infrastructure.Identity
+@inject UserManager<ApplicationUser> UserManager
+
+<header class="topbar">
+    <div class="topbar-left">
+
+        <!-- Mobile Sidebar Toggle -->
+        <button type="button"
+                class="btn btn-icon d-lg-none"
+                id="sidebarToggle"
+                title="Open menu">
+            <i class="bi bi-list"></i>
+        </button>
+
+        <!-- Breadcrumb -->
+        <div class="topbar-breadcrumb">
+            <span class="breadcrumb-home">
+                <i class="bi bi-house"></i>
+            </span>
+
+            <i class="bi bi-chevron-right breadcrumb-separator"></i>
+
+            <span class="breadcrumb-current">
+                @ViewData["Title"]
+            </span>
+        </div>
+
+    </div>
+
+
+    <div class="topbar-right">
+
+        <!-- Global Search -->
+        <button type="button"
+                class="topbar-action d-none d-md-flex"
+                title="Search">
+            <i class="bi bi-search"></i>
+        </button>
+
+
+        <!-- Notifications -->
+        <button type="button"
+                class="topbar-action position-relative"
+                title="Notifications">
+            <i class="bi bi-bell"></i>
+
+            <span class="notification-badge">
+                3
+            </span>
+        </button>
+
+
+        <!-- Theme Toggle -->
+        <button type="button"
+                class="topbar-action"
+                id="themeToggle"
+                title="Toggle theme">
+            <i class="bi bi-moon"></i>
+        </button>
+
+
+        <!-- User Menu -->
+        @if (User.Identity?.IsAuthenticated == true)
+        {
+            var currentUser =
+                await UserManager.GetUserAsync(User);
+
+            var displayName =
+                !string.IsNullOrWhiteSpace(currentUser?.FirstName)
+                    ? $"{currentUser.FirstName} {currentUser.LastName}".Trim()
+                    : User.Identity?.Name ?? "User";
+
+            var email =
+                currentUser?.Email
+                ?? User.Identity?.Name
+                ?? string.Empty;
+
+            var initials = "U";
+
+            if (!string.IsNullOrWhiteSpace(displayName))
+            {
+                var parts = displayName
+                    .Split(
+                        ' ',
+                        StringSplitOptions.RemoveEmptyEntries);
+
+                if (parts.Length >= 2)
+                {
+                    initials =
+                        $"{parts[0][0]}{parts[^1][0]}"
+                        .ToUpper();
+                }
+                else
+                {
+                    initials =
+                        parts[0][0]
+                            .ToString()
+                            .ToUpper();
+                }
+            }
+
+            <div class="dropdown">
+
+                <button class="user-menu-button dropdown-toggle"
+                        type="button"
+                        data-bs-toggle="dropdown"
+                        aria-expanded="false">
+
+                    <div class="avatar avatar-sm">
+                        <span>
+                            @initials
+                        </span>
+                    </div>
+
+                    <div class="user-menu-info d-none d-md-block">
+
+                        <div class="user-menu-name">
+                            @displayName
+                        </div>
+
+                        <div class="user-menu-email">
+                            @email
+                        </div>
+
+                    </div>
+
+                    <i class="bi bi-chevron-down user-menu-chevron"></i>
+                </button>
+
+
+                <ul class="dropdown-menu dropdown-menu-end user-dropdown">
+
+                    <!-- User Information -->
+
+                    <li class="dropdown-header">
+
+                        <div class="d-flex align-items-center gap-3">
+
+                            <div class="avatar avatar-lg">
+                                <span>
+                                    @initials
+                                </span>
+                            </div>
+
+                            <div>
+
+                                <div class="fw-semibold">
+                                    @displayName
+                                </div>
+
+                                <small class="text-muted">
+                                    @email
+                                </small>
+
+                            </div>
+
+                        </div>
+
+                    </li>
+
+
+                    <li>
+                        <hr class="dropdown-divider" />
+                    </li>
+
+
+                    <!-- Profile -->
+
+                    <li>
+                        <a class="dropdown-item"
+                           asp-controller="Account"
+                           asp-action="Profile">
+
+                            <i class="bi bi-person"></i>
+
+                            <span>My Profile</span>
+
+                        </a>
+                    </li>
+
+
+                    <!-- Change Password -->
+
+                    <li>
+                        <a class="dropdown-item"
+                           asp-controller="Account"
+                           asp-action="ChangePassword">
+
+                            <i class="bi bi-key"></i>
+
+                            <span>Change Password</span>
+
+                        </a>
+                    </li>
+
+
+                    <li>
+                        <hr class="dropdown-divider" />
+                    </li>
+
+
+                    <!-- Role Information -->
+
+                    <li class="dropdown-header text-uppercase small">
+                        Role
+                    </li>
+
+                    @if (User.IsInRole("Administrator"))
+                    {
+                        <li>
+                            <span class="dropdown-item-text">
+                                <i class="bi bi-shield-check me-2"></i>
+                                Administrator
+                            </span>
+                        </li>
+                    }
+                    else if (User.IsInRole("HR Manager"))
+                    {
+                        <li>
+                            <span class="dropdown-item-text">
+                                <i class="bi bi-people me-2"></i>
+                                HR Manager
+                            </span>
+                        </li>
+                    }
+                    else if (User.IsInRole("Manager"))
+                    {
+                        <li>
+                            <span class="dropdown-item-text">
+                                <i class="bi bi-person-badge me-2"></i>
+                                Manager
+                            </span>
+                        </li>
+                    }
+                    else if (User.IsInRole("Employee"))
+                    {
+                        <li>
+                            <span class="dropdown-item-text">
+                                <i class="bi bi-person me-2"></i>
+                                Employee
+                            </span>
+                        </li>
+                    }
+
+
+                    <li>
+                        <hr class="dropdown-divider" />
+                    </li>
+
+
+                    <!-- Logout -->
+
+                    <li>
+
+                        <form asp-controller="Account"
+                              asp-action="Logout"
+                              method="post">
+
+                            @Html.AntiForgeryToken()
+
+                            <button type="submit"
+                                    class="dropdown-item text-danger">
+
+                                <i class="bi bi-box-arrow-right"></i>
+
+                                <span>Sign Out</span>
+
+                            </button>
+
+                        </form>
+
+                    </li>
+
+                </ul>
+
+            </div>
+        }
+        else
+        {
+            <a asp-controller="Account"
+               asp-action="Login"
+               class="btn btn-primary btn-sm">
+
+                <i class="bi bi-box-arrow-in-right me-1"></i>
+
+                Sign In
+
+            </a>
+        }
+
+    </div>
+</header>

@@ -1,6 +1,9 @@
 <Solution>
+  <Folder Name="/reporting/" />
+  <Folder Name="/reporting/CrystalReports/" />
   <Folder Name="/src/">
     <Project Path="src/EmployeeManagement.Application/EmployeeManagement.Application.csproj" />
+    <Project Path="src/EmployeeManagement.CrystalReport/EmployeeManagement.CrystalReport.csproj" Id="bada769a-44d2-4a32-a0a0-3bb874fcefe5" />
     <Project Path="src/EmployeeManagement.Domain/EmployeeManagement.Domain.csproj" />
     <Project Path="src/EmployeeManagement.Infrastructure/EmployeeManagement.Infrastructure.csproj" />
     <Project Path="src/EmployeeManagement.Web/EmployeeManagement.Web.csproj" />

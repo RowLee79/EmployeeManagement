@@ -1,0 +1,356 @@
+﻿@{
+    var currentController =
+        ViewContext.RouteData.Values["controller"]?.ToString();
+
+    bool IsActive(string controller)
+    {
+        return string.Equals(
+            currentController,
+            controller,
+            StringComparison.OrdinalIgnoreCase);
+    }
+}
+
+<aside class="sidebar" id="sidebar">
+
+    <!-- =====================================================
+         BRAND
+         ===================================================== -->
+
+    <div class="sidebar-brand">
+
+        <a asp-controller="Dashboard"
+           asp-action="Index"
+           class="sidebar-brand-link">
+
+            <div class="sidebar-brand-icon">
+                <i class="bi bi-people-fill"></i>
+            </div>
+
+            <div class="sidebar-brand-text">
+
+                <span class="brand-title">
+                    Employee
+                </span>
+
+                <span class="brand-subtitle">
+                    Management
+                </span>
+
+            </div>
+
+        </a>
+
+    </div>
+
+
+    <!-- =====================================================
+         NAVIGATION
+         ===================================================== -->
+
+    <nav class="sidebar-nav">
+
+        <!-- =================================================
+             MAIN
+             ================================================= -->
+
+        <div class="sidebar-section">
+
+            <div class="sidebar-section-title">
+                MAIN
+            </div>
+
+
+            <!-- Dashboard -->
+
+            <a asp-controller="Dashboard"
+               asp-action="Index"
+               class="sidebar-link @(IsActive("Dashboard") ? "active" : "")">
+
+                <span class="sidebar-link-icon">
+                    <i class="bi bi-grid-1x2-fill"></i>
+                </span>
+
+                <span class="sidebar-link-text">
+                    Dashboard
+                </span>
+
+            </a>
+
+        </div>
+
+
+        <!-- =================================================
+             HUMAN RESOURCES
+             ================================================= -->
+
+        <div class="sidebar-section">
+
+            <div class="sidebar-section-title">
+                HUMAN RESOURCES
+            </div>
+
+
+            <!-- Employees -->
+            @if (User.IsInRole("Administrator") ||
+                             User.IsInRole("HR Manager") ||
+                             User.IsInRole("Manager"))
+            {
+                <a asp-controller="Employees"
+                   asp-action="Index"
+                   class="sidebar-link @(IsActive("Employees") ? "active" : "")">
+
+                    <span class="sidebar-link-icon">
+                        <i class="bi bi-person-vcard-fill"></i>
+                    </span>
+
+                    <span class="sidebar-link-text">
+                        Employees
+                    </span>
+
+                </a>
+            }
+
+
+            <!-- Departments -->
+            @if (User.IsInRole("Administrator") ||
+                             User.IsInRole("HR Manager"))
+            {
+                <a asp-controller="Departments"
+                   asp-action="Index"
+                   class="sidebar-link @(IsActive("Departments") ? "active" : "")">
+
+                    <span class="sidebar-link-icon">
+                        <i class="bi bi-diagram-3-fill"></i>
+                    </span>
+
+                    <span class="sidebar-link-text">
+                        Departments
+                    </span>
+
+                </a>
+            }
+
+
+            <!-- Positions -->
+            @if (User.IsInRole("Administrator") ||
+                             User.IsInRole("HR Manager"))
+            {
+                <a asp-controller="Positions"
+                   asp-action="Index"
+                   class="sidebar-link @(IsActive("Positions") ? "active" : "")">
+
+                    <span class="sidebar-link-icon">
+                        <i class="bi bi-briefcase-fill"></i>
+                    </span>
+
+                    <span class="sidebar-link-text">
+                        Positions
+                    </span>
+
+                </a>
+            }
+
+
+            <!-- Attendance -->
+            @if (User.IsInRole("Administrator") ||
+                             User.IsInRole("HR Manager") ||
+                             User.IsInRole("Manager"))
+            {
+                <a asp-controller="Attendance"
+                   asp-action="Index"
+                   class="sidebar-link @(IsActive("Attendance") ? "active" : "")">
+
+                    <span class="sidebar-link-icon">
+                        <i class="bi bi-calendar-check-fill"></i>
+                    </span>
+
+                    <span class="sidebar-link-text">
+                        Attendance
+                    </span>
+
+                </a>
+            }
+
+
+            <!-- Leave Management -->
+            @if (User.IsInRole("Administrator") ||
+                             User.IsInRole("HR Manager") ||
+                             User.IsInRole("Manager"))
+            {
+                <a asp-controller="Leave"
+                   asp-action="Index"
+                   class="sidebar-link @(IsActive("Leave") ? "active" : "")">
+
+                    <span class="sidebar-link-icon">
+                        <i class="bi bi-calendar-heart-fill"></i>
+                    </span>
+
+                    <span class="sidebar-link-text">
+                        Leave Management
+                    </span>
+
+                </a>
+            }
+
+        </div>
+
+
+        <!-- =================================================
+             PAYROLL & FINANCE
+             ================================================= -->
+
+        <div class="sidebar-section">
+
+            <div class="sidebar-section-title">
+                PAYROLL & FINANCE
+            </div>
+
+
+            <!-- Payroll -->
+            @if (User.IsInRole("Administrator") ||
+                             User.IsInRole("HR Manager"))
+            {
+                <a asp-controller="Payroll"
+                   asp-action="Index"
+                   class="sidebar-link @(IsActive("Payroll") ? "active" : "")">
+
+                    <span class="sidebar-link-icon">
+                        <i class="bi bi-cash-stack"></i>
+                    </span>
+
+                    <span class="sidebar-link-text">
+                        Payroll
+                    </span>
+
+                    <span class="sidebar-link-badge">
+                        <span class="badge badge-coming-soon">
+                            Soon
+                        </span>
+                    </span>
+
+                </a>
+            }
+
+        </div>
+
+
+        <!-- =================================================
+             REPORTS
+             ================================================= -->
+
+        <div class="sidebar-section">
+
+            <div class="sidebar-section-title">
+                REPORTS
+            </div>
+
+
+            @if (User.IsInRole("Administrator") ||
+      User.IsInRole("HR Manager") ||
+      User.IsInRole("Manager"))
+            {
+                <li class="nav-item">
+
+                    <a class="nav-link"
+                       asp-controller="Reports"
+                       asp-action="Employees">
+
+                        <i class="bi bi-bar-chart-line me-2"></i>
+
+                        Reports
+
+                    </a>
+
+                </li>
+            }
+
+        </div>
+
+
+        <!-- =================================================
+             ADMINISTRATION
+             ================================================= -->
+        @if (User.IsInRole("Administrator"))
+        {
+            <div class="sidebar-section">
+
+                <div class="sidebar-section-title">
+                    ADMINISTRATION
+                </div>
+
+
+                <!-- Users -->
+
+                <a asp-controller="Users"
+                   asp-action="Index"
+                   class="sidebar-link @(IsActive("Users") ? "active" : "")">
+
+                    <span class="sidebar-link-icon">
+                        <i class="bi bi-person-gear"></i>
+                    </span>
+
+                    <span class="sidebar-link-text">
+                        Users
+                    </span>
+
+                </a>
+
+
+                <!-- Settings -->
+
+                <a asp-controller="Settings"
+                   asp-action="Index"
+                   class="sidebar-link @(IsActive("Settings") ? "active" : "")">
+
+                    <span class="sidebar-link-icon">
+                        <i class="bi bi-gear-fill"></i>
+                    </span>
+
+                    <span class="sidebar-link-text">
+                        Settings
+                    </span>
+
+                    <span class="sidebar-link-badge">
+                        <span class="badge badge-coming-soon">
+                            Soon
+                        </span>
+                    </span>
+
+                </a>
+
+            </div>
+        }
+
+    </nav>
+
+
+    <!-- =====================================================
+         SIDEBAR FOOTER
+         ===================================================== -->
+
+    <div class="sidebar-footer">
+
+        <div class="sidebar-footer-card">
+
+            <div class="sidebar-footer-icon">
+                <i class="bi bi-shield-check"></i>
+            </div>
+
+            <div class="sidebar-footer-content">
+
+                <div class="sidebar-footer-title">
+                    Secure System
+                </div>
+
+                <div class="sidebar-footer-text">
+                    Identity protected
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</aside>
