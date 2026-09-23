@@ -1,63 +1,84 @@
-﻿@using EmployeeManagement.Application.Common
+﻿@using EmployeeManagement.Application.Common.Models
 @using EmployeeManagement.Application.Departments.Models
 @using EmployeeManagement.Application.Employees.Models
 @using EmployeeManagement.Application.Positions.Models
 @using EmployeeManagement.Domain.Enums
-@using EmployeeManagement.Application.Common.Models;
+
 @model PagedResult<EmployeeListModel>
 
 @{
     ViewData["Title"] = "Employees";
 
-    var search = ViewBag.Search as string ?? string.Empty;
-
-    var departmentId = ViewBag.DepartmentId as int?;
-    var positionId = ViewBag.PositionId as int?;
-
-    var status = ViewBag.Status as EmployeeStatus?;
-    var employmentType = ViewBag.EmploymentType as EmploymentType?;
-
-    var hireDateFrom = ViewBag.HireDateFrom as DateTime?;
-    var hireDateTo = ViewBag.HireDateTo as DateTime?;
-
-    var departments = ViewBag.Departments
-        as IReadOnlyList<DepartmentLookup>
+    var departments =
+        ViewBag.Departments as IReadOnlyList<DepartmentLookup>
         ?? Array.Empty<DepartmentLookup>();
 
-    var positions = ViewBag.Positions
-        as IReadOnlyList<PositionLookup>
+    var positions =
+        ViewBag.Positions as IReadOnlyList<PositionLookup>
         ?? Array.Empty<PositionLookup>();
+
+    var search =
+        ViewBag.Search as string;
+
+    int? departmentId =
+        ViewBag.DepartmentId;
+
+    int? positionId =
+        ViewBag.PositionId;
+
+    int? status =
+        ViewBag.Status;
+
+    int? employmentType =
+        ViewBag.EmploymentType;
+
+    DateTime? hireDateFrom =
+        ViewBag.HireDateFrom;
+
+    DateTime? hireDateTo =
+        ViewBag.HireDateTo;
+
+    var sortBy =
+        ViewBag.SortBy as string ?? "HireDate";
+
+    var sortDescending =
+        ViewBag.SortDescending is bool value && value;
 }
+
 
 <div class="container-fluid">
 
-    <!-- ============================= -->
-    <!-- Page Header -->
-    <!-- ============================= -->
-    <div class="alert alert-info">
-    Position count: @positions.Count
-</div>
 
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <!-- ============================================================
+         PAGE HEADER
+    ============================================================= -->
+
+    <div class="d-flex flex-wrap
+                justify-content-between
+                align-items-center
+                mb-4">
 
         <div>
+
             <h2 class="fw-bold mb-1">
-                <i class="bi bi-people me-2"></i>
                 Employees
             </h2>
 
             <p class="text-muted mb-0">
-                Manage employee information, employment details and records.
+                Manage employee records and information.
             </p>
+
         </div>
 
-        <div class="d-flex gap-2">
+
+        <div class="mt-3 mt-md-0">
 
             <a asp-controller="Employees"
                asp-action="Create"
                class="btn btn-primary">
 
                 <i class="bi bi-plus-lg me-1"></i>
+
                 Add Employee
 
             </a>
@@ -67,9 +88,9 @@
     </div>
 
 
-    <!-- ============================= -->
-    <!-- Search / Filters -->
-    <!-- ============================= -->
+    <!-- ============================================================
+         SEARCH AND FILTER CARD
+    ============================================================= -->
 
     <div class="card shadow-sm border-0 mb-4">
 
@@ -77,7 +98,7 @@
 
             <div class="d-flex align-items-center">
 
-                <i class="bi bi-funnel me-2 text-primary"></i>
+                <i class="bi bi-funnel me-2"></i>
 
                 <h5 class="mb-0 fw-semibold">
                     Search & Filters
@@ -87,38 +108,83 @@
 
         </div>
 
+
         <div class="card-body">
 
-            <form asp-controller="Employees"
+            <form id="employeeSearchForm"
+                  asp-controller="Employees"
                   asp-action="Index"
                   method="get">
 
+
+                <!-- ====================================================
+                     HIDDEN SEARCH STATE
+                ===================================================== -->
+
+                <input type="hidden"
+                       name="SortBy"
+                       value="@sortBy" />
+
+                <input type="hidden"
+                       name="SortDescending"
+                       value="@sortDescending" />
+
+                <input type="hidden"
+                       name="PageNumber"
+                       value="1" />
+
+
                 <div class="row g-3">
 
-                    <!-- Search -->
 
-                    <div class="col-md-6 col-lg-4">
+                    <!-- =================================================
+                         SEARCH
+                    ================================================== -->
 
-                        <label class="form-label fw-semibold">
+                    <div class="col-md-6 col-lg-3">
+
+                        <label for="Search"
+                               class="form-label fw-semibold">
+
                             Search
+
                         </label>
 
-                        <input type="text"
-                               name="Search"
-                               value="@search"
-                               class="form-control"
-                               placeholder="Employee number, name or email..." />
+
+                        <div class="input-group">
+
+                            <span class="input-group-text">
+
+                                <i class="bi bi-search"></i>
+
+                            </span>
+
+
+                            <input type="text"
+                                   id="Search"
+                                   name="Search"
+                                   value="@search"
+                                   class="form-control"
+                                   placeholder="Employee number, name, email..." />
+
+                        </div>
 
                     </div>
 
 
-                    <!-- Department -->
+                    <!-- =================================================
+                         DEPARTMENT
+                    ================================================== -->
 
                     <div class="col-md-6 col-lg-2">
 
-                        <label class="form-label fw-semibold">
+                        <label for="DepartmentId"
+                               class="form-label fw-semibold">
+
                             Department
+
                         </label>
+
 
                         <select name="DepartmentId"
                                 id="DepartmentId"
@@ -128,18 +194,24 @@
                                 All Departments
                             </option>
 
+
                             @foreach (var department in departments)
                             {
                                 if (departmentId == department.Id)
                                 {
-                                    <option value="@department.Id" selected>
+                                    <option value="@department.Id"
+                                            selected>
+
                                         @department.Name
+
                                     </option>
                                 }
                                 else
                                 {
                                     <option value="@department.Id">
+
                                         @department.Name
+
                                     </option>
                                 }
                             }
@@ -149,13 +221,19 @@
                     </div>
 
 
-                    <!-- Position -->
+                    <!-- =================================================
+                         POSITION
+                    ================================================== -->
 
                     <div class="col-md-6 col-lg-2">
 
-                        <label class="form-label fw-semibold">
+                        <label for="PositionId"
+                               class="form-label fw-semibold">
+
                             Position
+
                         </label>
+
 
                         <select name="PositionId"
                                 id="PositionId"
@@ -165,6 +243,7 @@
                                 All Positions
                             </option>
 
+
                             @foreach (var position in positions)
                             {
                                 if (positionId == position.Id)
@@ -172,14 +251,18 @@
                                     <option value="@position.Id"
                                             data-department-id="@position.DepartmentId"
                                             selected>
+
                                         @position.Name
+
                                     </option>
                                 }
                                 else
                                 {
                                     <option value="@position.Id"
                                             data-department-id="@position.DepartmentId">
+
                                         @position.Name
+
                                     </option>
                                 }
                             }
@@ -189,33 +272,48 @@
                     </div>
 
 
-                    <!-- Employment Type -->
+                    <!-- =================================================
+                         EMPLOYMENT TYPE
+                    ================================================== -->
 
                     <div class="col-md-6 col-lg-2">
 
-                        <label class="form-label fw-semibold">
+                        <label for="EmploymentType"
+                               class="form-label fw-semibold">
+
                             Employment Type
+
                         </label>
 
+
                         <select name="EmploymentType"
+                                id="EmploymentType"
                                 class="form-select">
 
                             <option value="">
                                 All Types
                             </option>
 
-                            @foreach (EmploymentType item in Enum.GetValues<EmploymentType>())
+
+                            @foreach (
+                                var type
+                                in Enum.GetValues<EmploymentType>())
                             {
-                                if (employmentType == item)
+                                if (employmentType == (int)type)
                                 {
-                                    <option value="@((int)item)" selected>
-                                        @item
+                                    <option value="@((int)type)"
+                                            selected>
+
+                                        @type
+
                                     </option>
                                 }
                                 else
                                 {
-                                    <option value="@((int)item)">
-                                        @item
+                                    <option value="@((int)type)">
+
+                                        @type
+
                                     </option>
                                 }
                             }
@@ -225,33 +323,48 @@
                     </div>
 
 
-                    <!-- Status -->
+                    <!-- =================================================
+                         STATUS
+                    ================================================== -->
 
                     <div class="col-md-6 col-lg-2">
 
-                        <label class="form-label fw-semibold">
+                        <label for="Status"
+                               class="form-label fw-semibold">
+
                             Status
+
                         </label>
 
+
                         <select name="Status"
+                                id="Status"
                                 class="form-select">
 
                             <option value="">
                                 All Status
                             </option>
 
-                            @foreach (EmployeeStatus item in Enum.GetValues<EmployeeStatus>())
+
+                            @foreach (
+                                var item
+                                in Enum.GetValues<EmployeeStatus>())
                             {
-                                if (status == item)
+                                if (status == (int)item)
                                 {
-                                    <option value="@((int)item)" selected>
+                                    <option value="@((int)item)"
+                                            selected>
+
                                         @item
+
                                     </option>
                                 }
                                 else
                                 {
                                     <option value="@((int)item)">
+
                                         @item
+
                                     </option>
                                 }
                             }
@@ -261,15 +374,22 @@
                     </div>
 
 
-                    <!-- Hire Date From -->
+                    <!-- =================================================
+                         HIRE DATE FROM
+                    ================================================== -->
 
-                    <div class="col-md-6 col-lg-3">
+                    <div class="col-md-6 col-lg-2">
 
-                        <label class="form-label fw-semibold">
+                        <label for="HireDateFrom"
+                               class="form-label fw-semibold">
+
                             Hire Date From
+
                         </label>
 
+
                         <input type="date"
+                               id="HireDateFrom"
                                name="HireDateFrom"
                                value="@(hireDateFrom?.ToString("yyyy-MM-dd"))"
                                class="form-control" />
@@ -277,15 +397,22 @@
                     </div>
 
 
-                    <!-- Hire Date To -->
+                    <!-- =================================================
+                         HIRE DATE TO
+                    ================================================== -->
 
-                    <div class="col-md-6 col-lg-3">
+                    <div class="col-md-6 col-lg-2">
 
-                        <label class="form-label fw-semibold">
+                        <label for="HireDateTo"
+                               class="form-label fw-semibold">
+
                             Hire Date To
+
                         </label>
 
+
                         <input type="date"
+                               id="HireDateTo"
                                name="HireDateTo"
                                value="@(hireDateTo?.ToString("yyyy-MM-dd"))"
                                class="form-control" />
@@ -293,26 +420,82 @@
                     </div>
 
 
-                    <!-- Buttons -->
+                    <!-- =================================================
+                         PAGE SIZE
+                    ================================================== -->
 
-                    <div class="col-md-12 col-lg-6 d-flex align-items-end gap-2">
+                    <div class="col-md-6 col-lg-2">
 
-                        <button type="submit"
-                                class="btn btn-primary">
+                        <label for="PageSize"
+                               class="form-label fw-semibold">
 
-                            <i class="bi bi-search me-1"></i>
-                            Search
+                            Page Size
 
-                        </button>
+                        </label>
 
-                        <a asp-controller="Employees"
-                           asp-action="Index"
-                           class="btn btn-outline-secondary">
 
-                            <i class="bi bi-arrow-clockwise me-1"></i>
-                            Reset
+                        <select name="PageSize"
+                                id="PageSize"
+                                class="form-select">
 
-                        </a>
+                            @foreach (var size in new[] { 10, 25, 50, 100 })
+                            {
+                                if (Model.PageSize == size)
+                                {
+                                    <option value="@size"
+                                            selected>
+
+                                        @size
+
+                                    </option>
+                                }
+                                else
+                                {
+                                    <option value="@size">
+
+                                        @size
+
+                                    </option>
+                                }
+                            }
+
+                        </select>
+
+                    </div>
+
+
+                    <!-- =================================================
+                         ACTION BUTTONS
+                    ================================================== -->
+
+                    <div class="col-12">
+
+                        <div class="d-flex gap-2">
+
+                            <button type="submit"
+                                    id="btnSearch"
+                                    class="btn btn-primary">
+
+                                <i class="bi bi-search me-1"></i>
+
+                                <span class="search-button-text">
+                                    Search
+                                </span>
+
+                            </button>
+
+
+                            <a asp-controller="Employees"
+                               asp-action="Index"
+                               class="btn btn-outline-secondary">
+
+                                <i class="bi bi-arrow-counterclockwise me-1"></i>
+
+                                Reset
+
+                            </a>
+
+                        </div>
 
                     </div>
 
@@ -325,77 +508,35 @@
     </div>
 
 
-    <!-- ============================= -->
-    <!-- Report Actions -->
-    <!-- ============================= -->
+    <!-- ============================================================
+         AJAX RESULTS
+    ============================================================= -->
 
-    <div class="card shadow-sm border-0 mb-4">
+ <div id="employeeResultsWrapper"
+     class="position-relative">
 
-        <div class="card-body">
+    <div id="employeeLoading"
+         class="position-absolute top-0 start-0
+                w-100 h-100
+                d-none
+                align-items-center
+                justify-content-center"
+         style="z-index: 10;
+                background: rgba(255,255,255,0.7);">
 
-            <div class="d-flex justify-content-between align-items-center">
+        <div class="text-center">
 
-                <div>
+            <div class="spinner-border text-primary"
+                 role="status">
 
-                    <h5 class="mb-1 fw-semibold">
-                        Employee Reports
-                    </h5>
+                <span class="visually-hidden">
+                    Loading...
+                </span>
 
-                    <small class="text-muted">
-                        Generate reports using the current filters.
-                    </small>
+            </div>
 
-                </div>
-
-                <div class="d-flex gap-2">
-
-                    <!-- PDF -->
-
-                    <form asp-controller="Employees"
-                          asp-action="EmployeeMasterReport"
-                          method="get"
-                          target="_blank">
-
-                        <input type="hidden"
-                               name="Search"
-                               value="@search" />
-
-                        <input type="hidden"
-                               name="DepartmentId"
-                               value="@departmentId" />
-
-                        <input type="hidden"
-                               name="PositionId"
-                               value="@positionId" />
-
-                        <input type="hidden"
-                               name="EmploymentType"
-                               value="@employmentType" />
-
-                        <input type="hidden"
-                               name="Status"
-                               value="@status" />
-
-                        <input type="hidden"
-                               name="HireDateFrom"
-                               value="@(hireDateFrom?.ToString("yyyy-MM-dd"))" />
-
-                        <input type="hidden"
-                               name="HireDateTo"
-                               value="@(hireDateTo?.ToString("yyyy-MM-dd"))" />
-
-                        <button type="submit"
-                                class="btn btn-danger">
-
-                            <i class="bi bi-file-earmark-pdf me-1"></i>
-                            Employee Report
-
-                        </button>
-
-                    </form>
-
-                </div>
-
+            <div class="mt-2 text-muted small">
+                Loading employees...
             </div>
 
         </div>
@@ -403,607 +544,697 @@
     </div>
 
 
-    <!-- ============================= -->
-    <!-- Employee Table -->
-    <!-- ============================= -->
-
-    <div class="card shadow-sm border-0">
-
-        <div class="card-header bg-white border-0 py-3">
-
-            <div class="d-flex justify-content-between align-items-center">
-
-                <div>
-
-                    <h5 class="mb-0 fw-semibold">
-                        Employee List
-                    </h5>
-
-                    <small class="text-muted">
-                        @Model.TotalCount employee(s) found
-                    </small>
-
-                </div>
-
-                <div>
-
-                    <span class="badge bg-light text-dark border">
-
-                        Page @Model.PageNumber
-                        of
-                        @Model.TotalPages
-
-                    </span>
-
-                </div>
-
-            </div>
-
-        </div>
-
-
-        <div class="card-body p-0">
-
-            <div class="table-responsive">
-
-                <table class="table table-hover align-middle mb-0">
-
-                    <thead class="table-light">
-
-                        <tr>
-
-                            <th class="ps-4">
-                                Employee
-                            </th>
-
-                            <th>
-                                Email
-                            </th>
-
-                            <th>
-                                Department
-                            </th>
-
-                            <th>
-                                Position
-                            </th>
-
-                            <th>
-                                Employment
-                            </th>
-
-                            <th>
-                                Status
-                            </th>
-
-                            <th>
-                                Hire Date
-                            </th>
-
-                            <th class="text-end">
-                                Salary
-                            </th>
-
-                            <th class="text-end pe-4">
-                                Actions
-                            </th>
-
-                        </tr>
-
-                    </thead>
-
-                    <tbody>
-
-                        @if (Model.Items.Any())
-                        {
-                            foreach (var employee in Model.Items)
-                            {
-                                <tr>
-
-                                    <!-- Employee -->
-
-                                    <td class="ps-4">
-
-                                        <div class="d-flex align-items-center">
-
-                                            @if (!string.IsNullOrWhiteSpace(employee.ProfileImage))
-                                            {
-                                                <img src="@employee.ProfileImage"
-                                                     alt="@employee.FullName"
-                                                     class="rounded-circle me-3"
-                                                     style="width:45px;height:45px;object-fit:cover;" />
-                                            }
-                                            else
-                                            {
-                                                <div class="rounded-circle bg-primary text-white
-                                                            d-flex align-items-center justify-content-center
-                                                            me-3"
-                                                     style="width:45px;height:45px;">
-
-                                                    @(employee.FirstName?.FirstOrDefault().ToString().ToUpper())
-
-                                                </div>
-                                            }
-
-                                            <div>
-
-                                                <div class="fw-semibold">
-
-                                                    @employee.FullName
-
-                                                </div>
-
-                                                <small class="text-muted">
-
-                                                    @employee.EmployeeNumber
-
-                                                </small>
-
-                                            </div>
-
-                                        </div>
-
-                                    </td>
-
-
-                                    <!-- Email -->
-
-                                    <td>
-
-                                        @if (!string.IsNullOrWhiteSpace(employee.Email))
-                                        {
-                                            <span>
-                                                @employee.Email
-                                            </span>
-                                        }
-                                        else
-                                        {
-                                            <span class="text-muted">
-                                                N/A
-                                            </span>
-                                        }
-
-                                    </td>
-
-
-                                    <!-- Department -->
-
-                                    <td>
-
-                                        <span class="fw-medium">
-
-                                            @employee.DepartmentName
-
-                                        </span>
-
-                                    </td>
-
-
-                                    <!-- Position -->
-
-                                    <td>
-
-                                        <span class="fw-medium">
-
-                                            @employee.PositionName
-
-                                        </span>
-
-                                    </td>
-
-
-                                    <!-- Employment -->
-
-                                    <td>
-
-                                        @switch (employee.EmploymentType)
-                                        {
-                                            case EmploymentType.Regular:
-                                                <span class="badge bg-success-subtle text-success">
-                                                    Regular
-                                                </span>
-                                                break;
-
-                                            case EmploymentType.Probationary:
-                                                <span class="badge bg-warning-subtle text-warning">
-                                                    Probationary
-                                                </span>
-                                                break;
-
-                                            case EmploymentType.Contractual:
-                                                <span class="badge bg-info-subtle text-info">
-                                                    Contractual
-                                                </span>
-                                                break;
-
-                                            case EmploymentType.PartTime:
-                                                <span class="badge bg-secondary-subtle text-secondary">
-                                                    Part-Time
-                                                </span>
-                                                break;
-
-                                            case EmploymentType.Temporary:
-                                                <span class="badge bg-dark-subtle text-dark">
-                                                    Temporary
-                                                </span>
-                                                break;
-
-                                            case EmploymentType.Intern:
-                                                <span class="badge bg-primary-subtle text-primary">
-                                                    Intern
-                                                </span>
-                                                break;
-
-                                            default:
-                                                <span class="badge bg-secondary">
-                                                    N/A
-                                                </span>
-                                                break;
-                                        }
-
-                                    </td>
-
-
-                                    <!-- Status -->
-
-                                    <td>
-
-                                        @switch (employee.Status)
-                                        {
-                                            case EmployeeStatus.Active:
-                                                <span class="badge bg-success">
-                                                    Active
-                                                </span>
-                                                break;
-
-                                            case EmployeeStatus.Inactive:
-                                                <span class="badge bg-secondary">
-                                                    Inactive
-                                                </span>
-                                                break;
-
-                                            case EmployeeStatus.OnLeave:
-                                                <span class="badge bg-warning text-dark">
-                                                    On Leave
-                                                </span>
-                                                break;
-
-                                            case EmployeeStatus.Resigned:
-                                                <span class="badge bg-info">
-                                                    Resigned
-                                                </span>
-                                                break;
-
-                                            case EmployeeStatus.Terminated:
-                                                <span class="badge bg-danger">
-                                                    Terminated
-                                                </span>
-                                                break;
-
-                                            default:
-                                                <span class="badge bg-secondary">
-                                                    N/A
-                                                </span>
-                                                break;
-                                        }
-
-                                    </td>
-
-
-                                    <!-- Hire Date -->
-
-                                    <td>
-
-                                        @employee.HireDate.ToString("dd-MMM-yyyy")
-
-                                    </td>
-
-
-                                    <!-- Salary -->
-
-                                    <td class="text-end">
-
-                                        @employee.BasicSalary.ToString("N2")
-
-                                    </td>
-
-
-                                    <!-- Actions -->
-
-                                    <td class="text-end pe-4">
-
-                                        <div class="btn-group">
-
-                                            <a asp-controller="Employees"
-                                               asp-action="Details"
-                                               asp-route-id="@employee.Id"
-                                               class="btn btn-sm btn-outline-primary"
-                                               title="View">
-
-                                                <i class="bi bi-eye"></i>
-
-                                            </a>
-
-
-                                            <a asp-controller="Employees"
-                                               asp-action="Edit"
-                                               asp-route-id="@employee.Id"
-                                               class="btn btn-sm btn-outline-secondary"
-                                               title="Edit">
-
-                                                <i class="bi bi-pencil"></i>
-
-                                            </a>
-
-
-                                            <a asp-controller="Employees"
-                                               asp-action="Delete"
-                                               asp-route-id="@employee.Id"
-                                               class="btn btn-sm btn-outline-danger"
-                                               title="Delete">
-
-                                                <i class="bi bi-trash"></i>
-
-                                            </a>
-
-                                        </div>
-
-                                    </td>
-
-                                </tr>
-                            }
-                        }
-                        else
-                        {
-                            <tr>
-
-                                <td colspan="9"
-                                    class="text-center py-5">
-
-                                    <div class="text-muted">
-
-                                        <i class="bi bi-people fs-1 d-block mb-3"></i>
-
-                                        <h5>
-                                            No employees found
-                                        </h5>
-
-                                        <p class="mb-0">
-                                            Try changing your search or filter criteria.
-                                        </p>
-
-                                    </div>
-
-                                </td>
-
-                            </tr>
-                        }
-
-                    </tbody>
-
-                </table>
-
-            </div>
-
-        </div>
-
-
-        <!-- ============================= -->
-        <!-- Pagination -->
-        <!-- ============================= -->
-
-        @if (Model.TotalPages > 1)
-        {
-            <div class="card-footer bg-white border-0">
-
-                <div class="d-flex justify-content-between align-items-center">
-
-                    <div class="text-muted">
-
-                        Showing
-
-                        <strong>
-                            @(((Model.PageNumber - 1) * Model.PageSize) + 1)
-                        </strong>
-
-                        to
-
-                        <strong>
-                            @(Math.Min(
-                                Model.PageNumber * Model.PageSize,
-                                Model.TotalCount))
-                        </strong>
-
-                        of
-
-                        <strong>
-                            @Model.TotalCount
-                        </strong>
-
-                        employees
-
-                    </div>
-
-
-                    <nav>
-
-                        <ul class="pagination mb-0">
-
-                            <!-- Previous -->
-
-                            <li class="page-item @(Model.HasPrevious ? "" : "disabled")">
-
-                                @if (Model.HasPrevious)
-                                {
-                                    <a class="page-link"
-                                       asp-controller="Employees"
-                                       asp-action="Index"
-                                       asp-route-PageNumber="@(Model.PageNumber - 1)"
-                                       asp-route-Search="@search"
-                                       asp-route-DepartmentId="@departmentId"
-                                       asp-route-PositionId="@positionId"
-                                       asp-route-EmploymentType="@employmentType"
-                                       asp-route-Status="@status"
-                                       asp-route-HireDateFrom="@(hireDateFrom?.ToString("yyyy-MM-dd"))"
-                                       asp-route-HireDateTo="@(hireDateTo?.ToString("yyyy-MM-dd"))">
-
-                                        <i class="bi bi-chevron-left"></i>
-
-                                    </a>
-                                }
-                                else
-                                {
-                                    <span class="page-link">
-                                        <i class="bi bi-chevron-left"></i>
-                                    </span>
-                                }
-
-                            </li>
-
-
-                            <!-- Page Numbers -->
-
-                           @for (var pageNumber = 1; pageNumber <= Model.TotalPages; pageNumber++)
-{
-    <li class="page-item @(pageNumber == Model.PageNumber ? "active" : "")">
-
-        <a class="page-link"
-           asp-controller="Employees"
-           asp-action="Index"
-           asp-route-PageNumber="@pageNumber"
-           asp-route-Search="@search"
-           asp-route-DepartmentId="@departmentId"
-           asp-route-PositionId="@positionId"
-           asp-route-EmploymentType="@employmentType"
-           asp-route-Status="@status"
-           asp-route-HireDateFrom="@(hireDateFrom?.ToString("yyyy-MM-dd"))"
-           asp-route-HireDateTo="@(hireDateTo?.ToString("yyyy-MM-dd"))">
-
-            @pageNumber
-
-        </a>
-
-    </li>
-}
-
-
-                            <!-- Next -->
-
-                            <li class="page-item @(Model.HasNext ? "" : "disabled")">
-
-                                @if (Model.HasNext)
-                                {
-                                    <a class="page-link"
-                                       asp-controller="Employees"
-                                       asp-action="Index"
-                                       asp-route-PageNumber="@(Model.PageNumber + 1)"
-                                       asp-route-Search="@search"
-                                       asp-route-DepartmentId="@departmentId"
-                                       asp-route-PositionId="@positionId"
-                                       asp-route-EmploymentType="@employmentType"
-                                       asp-route-Status="@status"
-                                       asp-route-HireDateFrom="@(hireDateFrom?.ToString("yyyy-MM-dd"))"
-                                       asp-route-HireDateTo="@(hireDateTo?.ToString("yyyy-MM-dd"))">
-
-                                        <i class="bi bi-chevron-right"></i>
-
-                                    </a>
-                                }
-                                else
-                                {
-                                    <span class="page-link">
-                                        <i class="bi bi-chevron-right"></i>
-                                    </span>
-                                }
-
-                            </li>
-
-                        </ul>
-
-                    </nav>
-
-                </div>
-
-            </div>
-        }
+    <div id="employeeResults">
+
+        @await Html.PartialAsync(
+            "_EmployeeResults",
+            Model)
 
     </div>
 
 </div>
 
+</div>
+
+
+<!-- ================================================================
+     JAVASCRIPT
+================================================================= -->
 
 @section Scripts {
 
     <script>
 
-        document.addEventListener("DOMContentLoaded", function () {
+     document.addEventListener(
+    "DOMContentLoaded",
+    function () {
 
-            const departmentSelect =
-                document.getElementById("DepartmentId");
+        const form =
+            document.getElementById(
+                "employeeSearchForm"
+            );
 
-            const positionSelect =
-                document.getElementById("PositionId");
+        const resultsContainer =
+            document.getElementById(
+                "employeeResults"
+            );
+
+        const loading =
+            document.getElementById(
+                "employeeLoading"
+            );
+
+        const departmentSelect =
+            document.getElementById(
+                "DepartmentId"
+            );
+
+        const positionSelect =
+            document.getElementById(
+                "PositionId"
+            );
+
+        const searchInput =
+            document.getElementById(
+                "Search"
+            );
+
+        const searchButton =
+            document.getElementById(
+                "btnSearch"
+            );
 
 
-            if (!departmentSelect || !positionSelect) {
+        if (
+            !form ||
+            !resultsContainer
+        ) {
+            return;
+        }
+
+
+        /* ============================================================
+           STATE
+        ============================================================= */
+
+        let currentRequest = null;
+
+        let searchTimer = null;
+
+
+        /* ============================================================
+           LOADING
+        ============================================================= */
+
+        function setLoading(
+            isLoading
+        ) {
+
+            if (isLoading) {
+
+                if (loading) {
+
+                    loading.classList.remove(
+                        "d-none"
+                    );
+
+                    loading.classList.add(
+                        "d-flex"
+                    );
+
+                }
+
+
+                resultsContainer.style.minHeight =
+                    "250px";
+
+
+                if (searchButton) {
+
+                    searchButton.disabled =
+                        true;
+
+
+                    const buttonText =
+                        searchButton.querySelector(
+                            ".search-button-text"
+                        );
+
+
+                    if (buttonText) {
+
+                        buttonText.textContent =
+                            "Searching...";
+
+                    }
+
+                }
+
+            }
+            else {
+
+                if (loading) {
+
+                    loading.classList.remove(
+                        "d-flex"
+                    );
+
+                    loading.classList.add(
+                        "d-none"
+                    );
+
+                }
+
+
+                resultsContainer.style.minHeight =
+                    "";
+
+
+                if (searchButton) {
+
+                    searchButton.disabled =
+                        false;
+
+
+                    const buttonText =
+                        searchButton.querySelector(
+                            ".search-button-text"
+                        );
+
+
+                    if (buttonText) {
+
+                        buttonText.textContent =
+                            "Search";
+
+                    }
+
+                }
+
+            }
+
+        }
+
+
+        /* ============================================================
+           DEPARTMENT → POSITION
+        ============================================================= */
+
+        function filterPositions() {
+
+            if (
+                !departmentSelect ||
+                !positionSelect
+            ) {
                 return;
             }
 
 
-            function filterPositions() {
-
-                const departmentId =
-                    departmentSelect.value;
-
-                const options =
-                    positionSelect.querySelectorAll("option");
+            const selectedDepartmentId =
+                departmentSelect.value;
 
 
-                options.forEach(function (option) {
+            const positionOptions =
+                positionSelect.querySelectorAll(
+                    "option[data-department-id]"
+                );
 
-                    // Keep "All Positions" visible
-                    if (!option.value) {
-                        option.hidden = false;
+
+            positionOptions.forEach(
+                function (option) {
+
+                    const positionDepartmentId =
+                        option.getAttribute(
+                            "data-department-id"
+                        );
+
+
+                    if (
+                        selectedDepartmentId === ""
+                    ) {
+
+                        option.hidden =
+                            false;
+
                         return;
-                    }
-
-
-                    const optionDepartmentId =
-                        option.getAttribute("data-department-id");
-
-
-                    if (!departmentId ||
-                        optionDepartmentId === departmentId) {
-
-                        option.hidden = false;
-
-                    }
-                    else {
-
-                        option.hidden = true;
-
-                        // Clear selection if it no longer belongs
-                        if (option.selected) {
-                            positionSelect.value = "";
-                        }
 
                     }
 
-                });
+
+                    option.hidden =
+                        positionDepartmentId !==
+                        selectedDepartmentId;
+
+                }
+            );
+
+
+            const selectedOption =
+                positionSelect.options[
+                    positionSelect.selectedIndex
+                ];
+
+
+            if (
+                selectedOption &&
+                selectedOption.dataset.departmentId &&
+                selectedDepartmentId !== "" &&
+                selectedOption.dataset.departmentId !==
+                    selectedDepartmentId
+            ) {
+
+                positionSelect.value = "";
+
+            }
+
+        }
+
+
+        /* ============================================================
+           LOAD EMPLOYEES
+        ============================================================= */
+
+        async function loadEmployees(
+            page = 1
+        ) {
+
+            if (currentRequest) {
+
+                currentRequest.abort();
 
             }
 
 
-            departmentSelect.addEventListener(
-                "change",
-                filterPositions
+            currentRequest =
+                new AbortController();
+
+
+            const formData =
+                new FormData(form);
+
+
+            formData.set(
+                "PageNumber",
+                page
             );
 
 
-            // Run when page loads
-            filterPositions();
+            const params =
+                new URLSearchParams(
+                    formData
+                );
 
-        });
+
+            const url =
+                '@Url.Action("Search", "Employees")'
+                + "?"
+                + params.toString();
+
+
+            try {
+
+                setLoading(true);
+
+
+                const response =
+                    await fetch(
+                        url,
+                        {
+                            method: "GET",
+
+                            headers: {
+                                "X-Requested-With":
+                                    "XMLHttpRequest"
+                            },
+
+                            signal:
+                                currentRequest.signal
+                        }
+                    );
+
+
+                if (!response.ok) {
+
+                    throw new Error(
+                        `HTTP ${response.status}`
+                    );
+
+                }
+
+
+                const html =
+                    await response.text();
+
+
+                resultsContainer.innerHTML =
+                    html;
+
+
+                bindResultEvents();
+
+            }
+            catch (error) {
+
+                if (
+                    error.name ===
+                    "AbortError"
+                ) {
+
+                    return;
+
+                }
+
+
+                console.error(
+                    error
+                );
+
+
+                resultsContainer.innerHTML = `
+
+                    <div class="alert alert-danger shadow-sm">
+
+                        <div class="d-flex align-items-center">
+
+                            <i class="bi
+                                      bi-exclamation-triangle
+                                      fs-4
+                                      me-3">
+                            </i>
+
+                            <div>
+
+                                <div class="fw-semibold">
+                                    Unable to load employees
+                                </div>
+
+                                <div class="small">
+                                    Please try again.
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                `;
+
+            }
+            finally {
+
+                currentRequest =
+                    null;
+
+                setLoading(false);
+
+            }
+
+        }
+
+
+        /* ============================================================
+           SEARCH FORM
+        ============================================================= */
+
+        form.addEventListener(
+            "submit",
+            function (event) {
+
+                event.preventDefault();
+
+
+                clearTimeout(
+                    searchTimer
+                );
+
+
+                loadEmployees(1);
+
+            }
+        );
+
+
+        /* ============================================================
+           DEBOUNCED TEXT SEARCH
+        ============================================================= */
+
+        if (searchInput) {
+
+            searchInput.addEventListener(
+                "input",
+                function () {
+
+                    clearTimeout(
+                        searchTimer
+                    );
+
+
+                    const value =
+                        searchInput.value.trim();
+
+
+                    if (
+                        value.length === 0
+                    ) {
+
+                        loadEmployees(1);
+
+                        return;
+
+                    }
+
+
+                    if (
+                        value.length < 2
+                    ) {
+
+                        return;
+
+                    }
+
+
+                    searchTimer =
+                        setTimeout(
+                            function () {
+
+                                loadEmployees(1);
+
+                            },
+                            500
+                        );
+
+                }
+            );
+
+        }
+
+
+        /* ============================================================
+           DEPARTMENT
+        ============================================================= */
+
+        if (departmentSelect) {
+
+            departmentSelect.addEventListener(
+                "change",
+                function () {
+
+                    filterPositions();
+
+                    loadEmployees(1);
+
+                }
+            );
+
+        }
+
+
+        /* ============================================================
+           OTHER FILTERS
+        ============================================================= */
+
+        const filterIds = [
+
+            "EmploymentType",
+
+            "Status",
+
+            "HireDateFrom",
+
+            "HireDateTo",
+
+            "PageSize"
+
+        ];
+
+
+        filterIds.forEach(
+            function (id) {
+
+                const element =
+                    document.getElementById(
+                        id
+                    );
+
+
+                if (!element) {
+                    return;
+                }
+
+
+                element.addEventListener(
+                    "change",
+                    function () {
+
+                        loadEmployees(1);
+
+                    }
+                );
+
+            }
+        );
+
+
+        /* ============================================================
+           POSITION
+        ============================================================= */
+
+        if (positionSelect) {
+
+            positionSelect.addEventListener(
+                "change",
+                function () {
+
+                    loadEmployees(1);
+
+                }
+            );
+
+        }
+
+
+        /* ============================================================
+           SORTING + PAGINATION
+        ============================================================= */
+
+        function bindResultEvents() {
+
+
+            /*
+             * Pagination
+             */
+
+            const pageLinks =
+                resultsContainer.querySelectorAll(
+                    ".ajax-page-link"
+                );
+
+
+            pageLinks.forEach(
+                function (link) {
+
+                    link.addEventListener(
+                        "click",
+                        function (event) {
+
+                            event.preventDefault();
+
+
+                            const page =
+                                parseInt(
+                                    link.dataset.page
+                                );
+
+
+                            if (
+                                !isNaN(page)
+                            ) {
+
+                                loadEmployees(
+                                    page
+                                );
+
+                            }
+
+                        }
+                    );
+
+                }
+            );
+
+
+            /*
+             * Sorting
+             */
+
+            const sortLinks =
+                resultsContainer.querySelectorAll(
+                    ".sort-link"
+                );
+
+
+            sortLinks.forEach(
+                function (link) {
+
+                    link.addEventListener(
+                        "click",
+                        function (event) {
+
+                            event.preventDefault();
+
+
+                            const sortBy =
+                                link.dataset.sortBy;
+
+
+                            const sortByInput =
+                                form.querySelector(
+                                    '[name="SortBy"]'
+                                );
+
+
+                            const sortDescendingInput =
+                                form.querySelector(
+                                    '[name="SortDescending"]'
+                                );
+
+
+                            if (
+                                !sortByInput ||
+                                !sortDescendingInput
+                            ) {
+                                return;
+                            }
+
+
+                            if (
+                                sortByInput.value
+                                    .toLowerCase() ===
+                                sortBy.toLowerCase()
+                            ) {
+
+                                sortDescendingInput.value =
+                                    sortDescendingInput
+                                        .value
+                                        .toLowerCase() ===
+                                    "true"
+                                        ? "false"
+                                        : "true";
+
+                            }
+                            else {
+
+                                sortByInput.value =
+                                    sortBy;
+
+                                sortDescendingInput.value =
+                                    "true";
+
+                            }
+
+
+                            loadEmployees(1);
+
+                        }
+                    );
+
+                }
+            );
+
+        }
+
+
+        /* ============================================================
+           INITIALIZE
+        ============================================================= */
+
+        filterPositions();
+
+        bindResultEvents();
+
+    }
+);
 
     </script>
 

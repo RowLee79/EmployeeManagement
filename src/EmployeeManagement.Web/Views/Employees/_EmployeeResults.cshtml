@@ -1,0 +1,734 @@
+﻿@using EmployeeManagement.Application.Common.Models
+@using EmployeeManagement.Application.Employees.Models
+@using EmployeeManagement.Domain.Enums
+
+@model PagedResult<EmployeeListModel>
+
+@{
+    var search = ViewBag.Search as string;
+
+    int? departmentId = ViewBag.DepartmentId;
+    int? positionId = ViewBag.PositionId;
+    int? status = ViewBag.Status;
+    int? employmentType = ViewBag.EmploymentType;
+
+    DateTime? hireDateFrom = ViewBag.HireDateFrom;
+    DateTime? hireDateTo = ViewBag.HireDateTo;
+
+    var sortBy =
+        ViewBag.SortBy as string ?? "HireDate";
+
+    var sortDescending =
+        ViewBag.SortDescending is bool value && value;
+
+    var currentPage = Model.PageNumber;
+    var totalPages = Model.TotalPages;
+
+    var startPage =
+        Math.Max(1, currentPage - 2);
+
+    var endPage =
+        Math.Min(totalPages, currentPage + 2);
+}
+
+<!-- ============================================================
+     RESULT INFORMATION
+============================================================= -->
+
+<div class="d-flex flex-wrap
+            justify-content-between
+            align-items-center
+            mb-3">
+
+    <div>
+
+        @if (Model.TotalCount > 0)
+        {
+            var firstItem =
+                ((Model.PageNumber - 1) * Model.PageSize) + 1;
+
+            var lastItem =
+                Math.Min(
+                    Model.PageNumber * Model.PageSize,
+                    Model.TotalCount);
+
+            <span class="text-muted">
+
+                Showing
+
+                <strong>
+                    @firstItem
+                </strong>
+
+                -
+
+                <strong>
+                    @lastItem
+                </strong>
+
+                of
+
+                <strong>
+                    @Model.TotalCount
+                </strong>
+
+                employees
+
+            </span>
+        }
+        else
+        {
+            <span class="text-muted">
+                No employees found.
+            </span>
+        }
+
+    </div>
+
+    <div class="text-muted small">
+
+        Page
+        <strong>@Model.PageNumber</strong>
+        of
+        <strong>@Model.TotalPages</strong>
+
+    </div>
+
+</div>
+
+
+<!-- ============================================================
+     EMPLOYEE TABLE
+============================================================= -->
+
+<div class="card shadow-sm border-0">
+
+    <div class="card-body p-0">
+
+        <div class="table-responsive">
+
+            <table class="table table-hover align-middle mb-0">
+
+                <thead class="table-light">
+
+                    <tr>
+
+                        <!-- Employee Number -->
+
+                        <th class="px-3">
+
+                            <a href="#"
+                               class="sort-link text-decoration-none text-dark"
+                               data-sort-by="EmployeeNumber">
+
+                                Employee #
+
+                                @if (sortBy.Equals(
+                                    "EmployeeNumber",
+                                    StringComparison.OrdinalIgnoreCase))
+                                {
+                                    <i class="bi @(sortDescending
+                                        ? "bi-arrow-down"
+                                        : "bi-arrow-up") ms-1"></i>
+                                }
+
+                            </a>
+
+                        </th>
+
+
+                        <!-- Employee -->
+
+                        <th>
+
+                            <a href="#"
+                               class="sort-link text-decoration-none text-dark"
+                               data-sort-by="LastName">
+
+                                Employee
+
+                                @if (sortBy.Equals(
+                                    "LastName",
+                                    StringComparison.OrdinalIgnoreCase))
+                                {
+                                    <i class="bi @(sortDescending
+                                        ? "bi-arrow-down"
+                                        : "bi-arrow-up") ms-1"></i>
+                                }
+
+                            </a>
+
+                        </th>
+
+
+                        <!-- Department -->
+
+                        <th>
+
+                            <a href="#"
+                               class="sort-link text-decoration-none text-dark"
+                               data-sort-by="Department">
+
+                                Department
+
+                                @if (sortBy.Equals(
+                                    "Department",
+                                    StringComparison.OrdinalIgnoreCase))
+                                {
+                                    <i class="bi @(sortDescending
+                                        ? "bi-arrow-down"
+                                        : "bi-arrow-up") ms-1"></i>
+                                }
+
+                            </a>
+
+                        </th>
+
+
+                        <!-- Position -->
+
+                        <th>
+
+                            <a href="#"
+                               class="sort-link text-decoration-none text-dark"
+                               data-sort-by="Position">
+
+                                Position
+
+                                @if (sortBy.Equals(
+                                    "Position",
+                                    StringComparison.OrdinalIgnoreCase))
+                                {
+                                    <i class="bi @(sortDescending
+                                        ? "bi-arrow-down"
+                                        : "bi-arrow-up") ms-1"></i>
+                                }
+
+                            </a>
+
+                        </th>
+
+
+                        <!-- Employment -->
+
+                        <th>
+
+                            <a href="#"
+                               class="sort-link text-decoration-none text-dark"
+                               data-sort-by="EmploymentType">
+
+                                Employment
+
+                                @if (sortBy.Equals(
+                                    "EmploymentType",
+                                    StringComparison.OrdinalIgnoreCase))
+                                {
+                                    <i class="bi @(sortDescending
+                                        ? "bi-arrow-down"
+                                        : "bi-arrow-up") ms-1"></i>
+                                }
+
+                            </a>
+
+                        </th>
+
+
+                        <!-- Hire Date -->
+
+                        <th>
+
+                            <a href="#"
+                               class="sort-link text-decoration-none text-dark"
+                               data-sort-by="HireDate">
+
+                                Hire Date
+
+                                @if (sortBy.Equals(
+                                    "HireDate",
+                                    StringComparison.OrdinalIgnoreCase))
+                                {
+                                    <i class="bi @(sortDescending
+                                        ? "bi-arrow-down"
+                                        : "bi-arrow-up") ms-1"></i>
+                                }
+
+                            </a>
+
+                        </th>
+
+
+                        <!-- Salary -->
+
+                        <th>
+
+                            <a href="#"
+                               class="sort-link text-decoration-none text-dark"
+                               data-sort-by="Salary">
+
+                                Salary
+
+                                @if (sortBy.Equals(
+                                    "Salary",
+                                    StringComparison.OrdinalIgnoreCase))
+                                {
+                                    <i class="bi @(sortDescending
+                                        ? "bi-arrow-down"
+                                        : "bi-arrow-up") ms-1"></i>
+                                }
+
+                            </a>
+
+                        </th>
+
+
+                        <!-- Status -->
+
+                        <th>
+
+                            <a href="#"
+                               class="sort-link text-decoration-none text-dark"
+                               data-sort-by="Status">
+
+                                Status
+
+                                @if (sortBy.Equals(
+                                    "Status",
+                                    StringComparison.OrdinalIgnoreCase))
+                                {
+                                    <i class="bi @(sortDescending
+                                        ? "bi-arrow-down"
+                                        : "bi-arrow-up") ms-1"></i>
+                                }
+
+                            </a>
+
+                        </th>
+
+
+                        <th class="text-end px-3">
+                            Actions
+                        </th>
+
+                    </tr>
+
+                </thead>
+
+
+                <tbody>
+
+                    @if (Model.Items.Any())
+                    {
+                        foreach (var employee in Model.Items)
+                        {
+                            <tr>
+
+                                <!-- Employee Number -->
+
+                                <td class="px-3">
+
+                                    <span class="fw-semibold">
+                                        @employee.EmployeeNumber
+                                    </span>
+
+                                </td>
+
+
+                                <!-- Employee -->
+
+                                <td>
+
+                                    <div class="d-flex align-items-center">
+
+                                        @if (!string.IsNullOrWhiteSpace(
+                                            employee.ProfileImage))
+                                        {
+                                            <img src="@employee.ProfileImage"
+                                                 alt="@employee.FullName"
+                                                 class="rounded-circle me-2"
+                                                 width="40"
+                                                 height="40"
+                                                 style="object-fit: cover;" />
+                                        }
+                                        else
+                                        {
+                                            <div class="rounded-circle bg-light
+                                                        d-flex
+                                                        align-items-center
+                                                        justify-content-center
+                                                        me-2"
+                                                 style="width:40px;height:40px;">
+
+                                                <i class="bi bi-person text-muted"></i>
+
+                                            </div>
+                                        }
+
+                                        <div>
+
+                                            <div class="fw-semibold">
+                                                @employee.FullName
+                                            </div>
+
+                                            @if (!string.IsNullOrWhiteSpace(
+                                                employee.Email))
+                                            {
+                                                <div class="text-muted small">
+                                                    @employee.Email
+                                                </div>
+                                            }
+
+                                        </div>
+
+                                    </div>
+
+                                </td>
+
+
+                                <!-- Department -->
+
+                                <td>
+                                    @employee.DepartmentName
+                                </td>
+
+
+                                <!-- Position -->
+
+                                <td>
+                                    @employee.PositionName
+                                </td>
+
+
+                                <!-- Employment -->
+
+                                <td>
+                                    @employee.EmploymentType
+                                </td>
+
+
+                              <!-- Hire Date -->
+                                <td>
+                                    <span>
+                                        @employee.HireDate.ToString("dd-MMM-yyyy")
+                                    </span>
+                                </td>
+
+
+                                <!-- Salary -->
+                                <td class="text-end">
+                                    <span class="fw-semibold">
+                                        ₱@employee.BasicSalary.ToString("N2")
+                                    </span>
+                                </td>
+
+                                <!-- Status -->
+
+                                <td>
+
+                                    @switch (employee.Status)
+                                    {
+                                        case EmployeeStatus.Active:
+
+                                            <span class="badge text-bg-success">
+                                                Active
+                                            </span>
+
+                                            break;
+
+                                        case EmployeeStatus.Inactive:
+
+                                            <span class="badge text-bg-secondary">
+                                                Inactive
+                                            </span>
+
+                                            break;
+
+                                        case EmployeeStatus.OnLeave:
+
+                                            <span class="badge text-bg-warning">
+                                                On Leave
+                                            </span>
+
+                                            break;
+
+                                        case EmployeeStatus.Resigned:
+
+                                            <span class="badge text-bg-info">
+                                                Resigned
+                                            </span>
+
+                                            break;
+
+                                        case EmployeeStatus.Terminated:
+
+                                            <span class="badge text-bg-danger">
+                                                Terminated
+                                            </span>
+
+                                            break;
+
+                                        default:
+
+                                            <span class="badge text-bg-secondary">
+                                                @employee.Status
+                                            </span>
+
+                                            break;
+                                    }
+
+                                </td>
+
+
+                                <!-- Actions -->
+ <!-- Actions -->
+                                <td class="text-end">
+
+                                    <div class="btn-group btn-group-sm">
+
+                                        <!-- View Details -->
+                                        <a asp-action="Details"
+                                           asp-route-id="@employee.Id"
+                                           class="btn btn-outline-primary"
+                                           title="View Details">
+
+                                            <i class="bi bi-eye"></i>
+
+                                        </a>
+
+
+                                        <!-- Edit -->
+                                        <a asp-action="Edit"
+                                           asp-route-id="@employee.Id"
+                                           class="btn btn-outline-secondary"
+                                           title="Edit Employee">
+
+                                            <i class="bi bi-pencil"></i>
+
+                                        </a>
+
+                                    </div>
+
+                                </td>
+
+
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+
+                            <td colspan="9"
+                                class="text-center py-5">
+
+                                <div class="text-muted">
+
+                                    <i class="bi bi-people fs-1 d-block mb-3"></i>
+
+                                    <h5>
+                                        No employees found
+                                    </h5>
+
+                                    <p class="mb-0">
+                                        Try changing your search
+                                        or filter criteria.
+                                    </p>
+
+                                </div>
+
+                            </td>
+
+                        </tr>
+                    }
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- ============================================================
+     PAGINATION
+============================================================= -->
+
+@if (Model.TotalPages > 1)
+{
+    <div class="d-flex flex-wrap
+                justify-content-between
+                align-items-center
+                mt-4">
+
+        <div class="text-muted small mb-2 mb-md-0">
+
+            Page
+            <strong>@currentPage</strong>
+            of
+            <strong>@totalPages</strong>
+
+        </div>
+
+
+        <nav aria-label="Employee pagination">
+
+            <ul class="pagination mb-0">
+
+
+                <!-- Previous -->
+
+                <li class="page-item
+                    @(Model.HasPrevious ? "" : "disabled")">
+
+                    @if (Model.HasPrevious)
+                    {
+                        <a href="#"
+                           class="page-link ajax-page-link"
+                           data-page="@(currentPage - 1)">
+
+                            <i class="bi bi-chevron-left"></i>
+
+                            Previous
+
+                        </a>
+                    }
+                    else
+                    {
+                        <span class="page-link">
+
+                            <i class="bi bi-chevron-left"></i>
+
+                            Previous
+
+                        </span>
+                    }
+
+                </li>
+
+
+                <!-- First Page -->
+
+                @if (startPage > 1)
+                {
+                    <li class="page-item">
+
+                        <a href="#"
+                           class="page-link ajax-page-link"
+                           data-page="1">
+
+                            1
+
+                        </a>
+
+                    </li>
+                }
+
+
+                <!-- Left Ellipsis -->
+
+                @if (startPage > 2)
+                {
+                    <li class="page-item disabled">
+
+                        <span class="page-link">
+                            ...
+                        </span>
+
+                    </li>
+                }
+
+
+                <!-- Page Numbers -->
+
+                @for (
+                    var pageNumber = startPage;
+                    pageNumber <= endPage;
+                    pageNumber++)
+                {
+                    <li class="page-item
+                        @(pageNumber == currentPage
+                            ? "active"
+                            : "")">
+
+                        <a href="#"
+                           class="page-link ajax-page-link"
+                           data-page="@pageNumber">
+
+                            @pageNumber
+
+                        </a>
+
+                    </li>
+                }
+
+
+                <!-- Right Ellipsis -->
+
+                @if (endPage < totalPages - 1)
+                {
+                    <li class="page-item disabled">
+
+                        <span class="page-link">
+                            ...
+                        </span>
+
+                    </li>
+                }
+
+
+                <!-- Last Page -->
+
+                @if (endPage < totalPages)
+                {
+                    <li class="page-item">
+
+                        <a href="#"
+                           class="page-link ajax-page-link"
+                           data-page="@totalPages">
+
+                            @totalPages
+
+                        </a>
+
+                    </li>
+                }
+
+
+                <!-- Next -->
+
+                <li class="page-item
+                    @(Model.HasNext ? "" : "disabled")">
+
+                    @if (Model.HasNext)
+                    {
+                        <a href="#"
+                           class="page-link ajax-page-link"
+                           data-page="@(currentPage + 1)">
+
+                            Next
+
+                            <i class="bi bi-chevron-right"></i>
+
+                        </a>
+                    }
+                    else
+                    {
+                        <span class="page-link">
+
+                            Next
+
+                            <i class="bi bi-chevron-right"></i>
+
+                        </span>
+                    }
+
+                </li>
+
+            </ul>
+
+        </nav>
+
+    </div>
+}

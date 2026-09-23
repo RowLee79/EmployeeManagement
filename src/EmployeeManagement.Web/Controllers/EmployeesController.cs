@@ -40,50 +40,32 @@ public class EmployeesController : Controller
 
     [HttpGet]
     [Authorize(Roles = "Administrator,HR Manager,Manager")]
-    [HttpGet]
-    public async Task<IActionResult> Index(
-    EmployeeSearchModel searchModel)
+    public async Task<IActionResult> Index(EmployeeSearchModel searchModel)
     {
-        var result =
-            await _employeeService.GetPagedAsync(searchModel);
+        var result = await _employeeService.GetPagedAsync(searchModel);
 
-        // Load departments
         var departments =
             await _departmentService.GetLookupAsync();
 
-        // Load positions
         var positions =
             await _positionService.GetLookupAsync();
 
-        ViewBag.Search =
-            searchModel.Search;
+        ViewBag.Search = searchModel.Search;
+        ViewBag.DepartmentId = searchModel.DepartmentId;
+        ViewBag.PositionId = searchModel.PositionId;
+        ViewBag.Status = searchModel.Status;
+        ViewBag.EmploymentType = searchModel.EmploymentType;
+        ViewBag.HireDateFrom = searchModel.HireDateFrom;
+        ViewBag.HireDateTo = searchModel.HireDateTo;
+        ViewBag.SortBy = searchModel.SortBy;
+        ViewBag.SortDescending = searchModel.SortDescending;
 
-        ViewBag.DepartmentId =
-            searchModel.DepartmentId;
-
-        ViewBag.PositionId =
-            searchModel.PositionId;
-
-        ViewBag.Status =
-            searchModel.Status;
-
-        ViewBag.EmploymentType =
-            searchModel.EmploymentType;
-
-        ViewBag.HireDateFrom =
-            searchModel.HireDateFrom;
-
-        ViewBag.HireDateTo =
-            searchModel.HireDateTo;
-
-        ViewBag.Departments =
-            departments;
-
-        ViewBag.Positions =
-            positions;
+        ViewBag.Departments = departments;
+        ViewBag.Positions = positions;
 
         return View(result);
     }
+
 
     // =========================================================
     // DETAILS
@@ -210,7 +192,7 @@ public class EmployeesController : Controller
             Suffix = employee.Suffix,
             BirthDate = employee.BirthDate,
             Gender = employee.Gender,
-            CivilStatus = employee.CivilStatus,
+            CivilStatus = employee.CivilStatus.ToString(),
             Email = employee.Email,
             PhoneNumber = employee.PhoneNumber,
             Address = employee.Address,
@@ -480,5 +462,28 @@ public class EmployeesController : Controller
             pdf,
             "application/pdf",
             "EmployeeMasterList.pdf");
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> Search(
+    EmployeeSearchModel searchModel)
+    {
+        var result =
+            await _employeeService.GetPagedAsync(searchModel);
+
+        ViewBag.Search = searchModel.Search;
+        ViewBag.DepartmentId = searchModel.DepartmentId;
+        ViewBag.PositionId = searchModel.PositionId;
+        ViewBag.Status = searchModel.Status;
+        ViewBag.EmploymentType = searchModel.EmploymentType;
+        ViewBag.HireDateFrom = searchModel.HireDateFrom;
+        ViewBag.HireDateTo = searchModel.HireDateTo;
+
+        ViewBag.SortBy = searchModel.SortBy;
+        ViewBag.SortDescending = searchModel.SortDescending;
+
+        return PartialView(
+            "_EmployeeResults",
+            result);
     }
 }

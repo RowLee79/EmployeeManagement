@@ -20,7 +20,7 @@ public class EmployeeDetailsModel
 
     public Gender Gender { get; set; }
 
-    public string? CivilStatus { get; set; }
+    public CivilStatus CivilStatus { get; set; }
 
     public string? Email { get; set; }
 
@@ -48,11 +48,15 @@ public class EmployeeDetailsModel
 
     public string PositionName { get; set; } = null!;
 
-    public DateTime CreatedDate { get; set; }
-
-    public string? CreatedBy { get; set; }
-
-    public DateTime? UpdatedDate { get; set; }
-
-    public string? UpdatedBy { get; set; }
+    public string FullName =>
+        string.Join(
+            " ",
+            new[]
+            {
+                FirstName,
+                MiddleName,
+                LastName,
+                Suffix
+            }
+            .Where(x => !string.IsNullOrWhiteSpace(x)));
 }

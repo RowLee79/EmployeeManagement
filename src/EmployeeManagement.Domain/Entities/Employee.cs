@@ -19,8 +19,8 @@ public class Employee : AuditableEntity
 
     public Gender Gender { get; set; }
 
-    public string? CivilStatus { get; set; }
-
+    //public string? CivilStatus { get; set; }
+    public CivilStatus? CivilStatus { get; set; }
     public string Email { get; set; } = null!;
 
     public string? PhoneNumber { get; set; }

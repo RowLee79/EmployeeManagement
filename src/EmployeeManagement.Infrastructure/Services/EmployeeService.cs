@@ -29,19 +29,23 @@ public class EmployeeService : IEmployeeService
     // =========================================================
 
     public async Task<PagedResult<EmployeeListModel>> GetPagedAsync(
-        EmployeeSearchModel searchModel)
+    EmployeeSearchModel searchModel)
     {
-        var query = BuildEmployeeQuery(searchModel);
+        searchModel.PageNumber =
+            Math.Max(1, searchModel.PageNumber);
 
-        query = ApplySorting(
-            query,
-            searchModel.SortBy,
-            searchModel.SortDescending);
+        var allowedPageSizes = new[] { 10, 25, 50, 100 };
 
-         // -----------------------------------------------------
+        if (!allowedPageSizes.Contains(searchModel.PageSize))
+        {
+            searchModel.PageSize = 10;
+        }
+
+        var query = _context.Employees
+            .AsNoTracking()
+            .Where(x => !x.IsDeleted);
+
         // Search
-        // -----------------------------------------------------
-
         if (!string.IsNullOrWhiteSpace(searchModel.Search))
         {
             var search = searchModel.Search.Trim();
@@ -49,136 +53,170 @@ public class EmployeeService : IEmployeeService
             query = query.Where(x =>
                 x.EmployeeNumber.Contains(search) ||
                 x.FirstName.Contains(search) ||
+                x.LastName.Contains(search) ||
                 (x.MiddleName != null &&
                  x.MiddleName.Contains(search)) ||
-                x.LastName.Contains(search) ||
                 (x.Email != null &&
-                 x.Email.Contains(search)) ||
-                (x.PhoneNumber != null &&
-                 x.PhoneNumber.Contains(search)));
+                 x.Email.Contains(search)));
         }
 
-        // -----------------------------------------------------
         // Department
-        // -----------------------------------------------------
-
         if (searchModel.DepartmentId.HasValue)
         {
             query = query.Where(x =>
-                x.DepartmentId == searchModel.DepartmentId.Value);
+                x.DepartmentId ==
+                searchModel.DepartmentId.Value);
         }
 
-        // -----------------------------------------------------
         // Position
-        // -----------------------------------------------------
-
         if (searchModel.PositionId.HasValue)
         {
             query = query.Where(x =>
-                x.PositionId == searchModel.PositionId.Value);
+                x.PositionId ==
+                searchModel.PositionId.Value);
         }
 
-        // -----------------------------------------------------
-        // Status
-        // -----------------------------------------------------
-
-        if (searchModel.Status.HasValue)
-        {
-            query = query.Where(x =>
-                x.Status == searchModel.Status.Value);
-        }
-
-        // -----------------------------------------------------
         // Employment Type
-        // -----------------------------------------------------
-
         if (searchModel.EmploymentType.HasValue)
         {
             query = query.Where(x =>
-                x.EmploymentType == searchModel.EmploymentType.Value);
+                x.EmploymentType ==
+                searchModel.EmploymentType.Value);
         }
 
-        // -----------------------------------------------------
-        // Hire Date From
-        // -----------------------------------------------------
+        // Status
+        if (searchModel.Status.HasValue)
+        {
+            query = query.Where(x =>
+                x.Status ==
+                searchModel.Status.Value);
+        }
 
+        // Hire Date From
         if (searchModel.HireDateFrom.HasValue)
         {
             query = query.Where(x =>
-                x.HireDate >= searchModel.HireDateFrom.Value.Date);
+                x.HireDate >=
+                searchModel.HireDateFrom.Value.Date);
         }
 
-        // -----------------------------------------------------
         // Hire Date To
-        // -----------------------------------------------------
-
         if (searchModel.HireDateTo.HasValue)
         {
-            var dateToExclusive =
+            var endDate =
                 searchModel.HireDateTo.Value.Date.AddDays(1);
 
             query = query.Where(x =>
-                x.HireDate < dateToExclusive);
+                x.HireDate < endDate);
         }
 
-        // -----------------------------------------------------
-        // Sorting
-        // -----------------------------------------------------
-
-        query = ApplySorting(
-            query,
-            searchModel.SortBy,
-            searchModel.SortDescending);
-
-        // -----------------------------------------------------
-        // Page Size
-        // -----------------------------------------------------
-
-        var allowedPageSizes = new[] { 10, 25, 50, 100 };
-
-        var pageSize = allowedPageSizes.Contains(searchModel.PageSize)
-            ? searchModel.PageSize
-            : 10;
-
-        var pageNumber = searchModel.PageNumber < 1
-            ? 1
-            : searchModel.PageNumber;
-
-        // -----------------------------------------------------
-        // Total Count
-        // -----------------------------------------------------
-
+        // Total count
         var totalCount = await query.CountAsync();
 
-        // -----------------------------------------------------
-        // Prevent invalid page number
-        // -----------------------------------------------------
-
-        var totalPages = (int)Math.Ceiling(
-            totalCount / (double)pageSize);
-
-        if (totalPages > 0 && pageNumber > totalPages)
+        // Sorting
+        query = searchModel.SortBy?.ToLowerInvariant() switch
         {
-            pageNumber = totalPages;
-        }
+            "employeenumber" =>
+                searchModel.SortDescending
+                    ? query
+                        .OrderByDescending(x => x.EmployeeNumber)
+                        .ThenByDescending(x => x.Id)
+                    : query
+                        .OrderBy(x => x.EmployeeNumber)
+                        .ThenBy(x => x.Id),
 
-        // -----------------------------------------------------
-        // Server-side pagination
-        // -----------------------------------------------------
+            "firstname" =>
+                searchModel.SortDescending
+                    ? query
+                        .OrderByDescending(x => x.FirstName)
+                        .ThenByDescending(x => x.Id)
+                    : query
+                        .OrderBy(x => x.FirstName)
+                        .ThenBy(x => x.Id),
 
-        var employees = await query
-            .Skip((pageNumber - 1) * pageSize)
-            .Take(pageSize)
+            "lastname" =>
+                searchModel.SortDescending
+                    ? query
+                        .OrderByDescending(x => x.LastName)
+                        .ThenByDescending(x => x.Id)
+                    : query
+                        .OrderBy(x => x.LastName)
+                        .ThenBy(x => x.Id),
+
+            "department" =>
+                searchModel.SortDescending
+                    ? query
+                        .OrderByDescending(x => x.Department.Name)
+                        .ThenBy(x => x.LastName)
+                    : query
+                        .OrderBy(x => x.Department.Name)
+                        .ThenBy(x => x.LastName),
+
+            "position" =>
+                searchModel.SortDescending
+                    ? query
+                        .OrderByDescending(x => x.Position.Name)
+                        .ThenBy(x => x.LastName)
+                    : query
+                        .OrderBy(x => x.Position.Name)
+                        .ThenBy(x => x.LastName),
+
+            "salary" =>
+                searchModel.SortDescending
+                    ? query
+                        .OrderByDescending(x => x.BasicSalary)
+                        .ThenBy(x => x.LastName)
+                    : query
+                        .OrderBy(x => x.BasicSalary)
+                        .ThenBy(x => x.LastName),
+
+            "hiredate" =>
+                searchModel.SortDescending
+                    ? query
+                        .OrderByDescending(x => x.HireDate)
+                        .ThenBy(x => x.LastName)
+                    : query
+                        .OrderBy(x => x.HireDate)
+                        .ThenBy(x => x.LastName),
+
+            "employmenttype" =>
+                    searchModel.SortDescending
+                    ? query
+                    .OrderByDescending(x => x.EmploymentType)
+                    .ThenBy(x => x.LastName)
+                    : query
+                    .OrderBy(x => x.EmploymentType)
+                    .ThenBy(x => x.LastName),
+
+            "status" =>
+                    searchModel.SortDescending
+                    ? query
+                    .OrderByDescending(x => x.Status)
+                    .ThenBy(x => x.LastName)
+                    : query
+                    .OrderBy(x => x.Status)
+                    .ThenBy(x => x.LastName),
+
+            _ =>
+                query
+                    .OrderByDescending(x => x.HireDate)
+                    .ThenBy(x => x.LastName)
+        };
+
+        // Pagination
+        var items = await query
+            .Skip(
+                (searchModel.PageNumber - 1)
+                * searchModel.PageSize)
+            .Take(searchModel.PageSize)
             .Select(x => new EmployeeListModel
             {
                 Id = x.Id,
-
                 EmployeeNumber = x.EmployeeNumber,
 
                 FirstName = x.FirstName,
                 MiddleName = x.MiddleName,
                 LastName = x.LastName,
-                Suffix = x.Suffix,
 
                 Email = x.Email,
                 PhoneNumber = x.PhoneNumber,
@@ -188,7 +226,6 @@ public class EmployeeService : IEmployeeService
                 Gender = x.Gender,
                 EmploymentType = x.EmploymentType,
                 Status = x.Status,
-
                 BasicSalary = x.BasicSalary,
 
                 DepartmentId = x.DepartmentId,
@@ -203,9 +240,9 @@ public class EmployeeService : IEmployeeService
 
         return new PagedResult<EmployeeListModel>
         {
-            Items = employees,
-            PageNumber = pageNumber,
-            PageSize = pageSize,
+            Items = items,
+            PageNumber = searchModel.PageNumber,
+            PageSize = searchModel.PageSize,
             TotalCount = totalCount
         };
     }
@@ -335,9 +372,7 @@ public class EmployeeService : IEmployeeService
     {
         return await _context.Employees
             .AsNoTracking()
-            .Where(x =>
-                x.Id == id &&
-                !x.IsDeleted)
+            .Where(x => x.Id == id && !x.IsDeleted)
             .Select(x => new EmployeeDetailsModel
             {
                 Id = x.Id,
@@ -345,15 +380,18 @@ public class EmployeeService : IEmployeeService
                 EmployeeNumber = x.EmployeeNumber,
 
                 FirstName = x.FirstName,
+
                 MiddleName = x.MiddleName,
+
                 LastName = x.LastName,
+
                 Suffix = x.Suffix,
 
                 BirthDate = x.BirthDate,
 
                 Gender = x.Gender,
 
-                CivilStatus = x.CivilStatus,
+                CivilStatus = (CivilStatus)x.CivilStatus,
 
                 Email = x.Email,
 
@@ -365,11 +403,9 @@ public class EmployeeService : IEmployeeService
 
                 HireDate = x.HireDate,
 
-                RegularizationDate =
-                    x.RegularizationDate,
+                RegularizationDate = x.RegularizationDate,
 
-                EmploymentType =
-                    x.EmploymentType,
+                EmploymentType = x.EmploymentType,
 
                 Status = x.Status,
 
@@ -377,21 +413,11 @@ public class EmployeeService : IEmployeeService
 
                 DepartmentId = x.DepartmentId,
 
-                DepartmentName =
-                    x.Department.Name,
+                DepartmentName = x.Department.Name,
 
                 PositionId = x.PositionId,
 
-                PositionName =
-                    x.Position.Name,
-
-                CreatedDate = x.CreatedDate,
-
-                CreatedBy = x.CreatedBy,
-
-                UpdatedDate = x.UpdatedDate,
-
-                UpdatedBy = x.UpdatedBy
+                PositionName = x.Position.Name
             })
             .FirstOrDefaultAsync();
     }
@@ -490,7 +516,7 @@ public class EmployeeService : IEmployeeService
             CivilStatus =
                 string.IsNullOrWhiteSpace(model.CivilStatus)
                     ? null
-                    : model.CivilStatus.Trim(),
+                    : Enum.Parse<CivilStatus>(model.CivilStatus.Trim()),
 
             Email = email,
 
@@ -644,7 +670,7 @@ public class EmployeeService : IEmployeeService
         employee.CivilStatus =
             string.IsNullOrWhiteSpace(model.CivilStatus)
                 ? null
-                : model.CivilStatus.Trim();
+                : Enum.Parse<CivilStatus>(model.CivilStatus.Trim());
 
         employee.Email =
             email;
@@ -887,7 +913,7 @@ public class EmployeeService : IEmployeeService
                 EscapeCsv(employee.Email),
                 EscapeCsv(employee.PhoneNumber),
                 EscapeCsv(employee.Gender.ToString()),
-                EscapeCsv(employee.CivilStatus),
+                EscapeCsv(employee.CivilStatus.ToString()),
                 EscapeCsv(employee.HireDate.ToString("yyyy-MM-dd")),
                 EscapeCsv(employee.EmploymentType.ToString()),
                 EscapeCsv(employee.Status.ToString()),

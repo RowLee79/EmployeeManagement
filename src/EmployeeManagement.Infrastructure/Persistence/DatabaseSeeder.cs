@@ -185,7 +185,7 @@ public static class DatabaseSeeder
 
                 Gender = Gender.Male,
 
-                CivilStatus = "Single",
+                CivilStatus = CivilStatus.Single,
 
                 Email = "juan.cruz@example.com",
 
@@ -227,7 +227,7 @@ public static class DatabaseSeeder
 
                 Gender = Gender.Female,
 
-                CivilStatus = "Married",
+                CivilStatus = CivilStatus.Married,
 
                 Email = "maria.garcia@example.com",
 
@@ -269,7 +269,7 @@ public static class DatabaseSeeder
 
                 Gender = Gender.Female,
 
-                CivilStatus = "Single",
+                CivilStatus = CivilStatus.Single,
 
                 Email = "ana.santos@example.com",
 
