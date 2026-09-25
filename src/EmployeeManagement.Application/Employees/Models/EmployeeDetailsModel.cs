@@ -1,11 +1,11 @@
-﻿using EmployeeManagement.Domain.Enums;
+﻿using EmployeeManagement.Domain.Common;
+using EmployeeManagement.Domain.Enums;
+using EmployeeManagement.Domain.Entities;
 
 namespace EmployeeManagement.Application.Employees.Models;
 
-public class EmployeeDetailsModel
+public class EmployeeDetailsModel : AuditableEntity
 {
-    public int Id { get; set; }
-
     public string EmployeeNumber { get; set; } = null!;
 
     public string FirstName { get; set; } = null!;
@@ -59,4 +59,5 @@ public class EmployeeDetailsModel
                 Suffix
             }
             .Where(x => !string.IsNullOrWhiteSpace(x)));
+
 }

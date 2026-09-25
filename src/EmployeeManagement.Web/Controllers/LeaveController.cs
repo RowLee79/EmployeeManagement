@@ -1,7 +1,7 @@
-﻿using EmployeeManagement.Application.Employees.Interfaces;
-using EmployeeManagement.Application.LeaveManagement.Interfaces;
+﻿using EmployeeManagement.Application.LeaveManagement.Interfaces;
 using EmployeeManagement.Application.LeaveManagement.Models;
 using EmployeeManagement.Domain.Enums;
+using EmployeeManagement.Application.Employees.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 

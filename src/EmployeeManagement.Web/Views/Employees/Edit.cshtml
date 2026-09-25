@@ -1,69 +1,68 @@
-﻿```cshtml
-@using EmployeeManagement.Application.Departments.Models
-@using EmployeeManagement.Application.Positions.Interfaces
+﻿@using EmployeeManagement.Application.Departments.Models
 @using EmployeeManagement.Application.Positions.Models
 @using EmployeeManagement.Domain.Enums
-
-@model EmployeeManagement.Application.Employees.Models.EmployeeEditModel
+@model EmployeeManagement.Web.Models.Employees.EmployeeEditViewModel
 
 @{
     ViewData["Title"] = "Edit Employee";
 
-    var departments =
-        ViewBag.Departments as IReadOnlyList<DepartmentLookup>
-        ?? Array.Empty<DepartmentLookup>();
-
-    var positions =
-        ViewBag.Positions as IReadOnlyList<PositionListModel>
-        ?? Array.Empty<PositionListModel>();
-
     var employeeId = ViewBag.EmployeeId;
 
-    string GetInitials()
-    {
-        var first = Model.FirstName?.FirstOrDefault();
-        var last = Model.LastName?.FirstOrDefault();
-
-        return $"{first}{last}".ToUpperInvariant();
-    }
+    var imageUrl = string.IsNullOrWhiteSpace(Model.Employee.ProfileImage)
+        ? Url.Content("~/images/default-avatar.png")
+        : Model.Employee.ProfileImage;
 }
 
 <div class="container-fluid py-4">
 
-    <!-- Header -->
-    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
+    <!-- HEADER -->
+    <div class="d-flex flex-column flex-md-row
+                justify-content-between
+                align-items-md-center mb-4">
 
         <div>
+
             <h2 class="fw-bold mb-1">
+
                 <i class="bi bi-person-gear me-2"></i>
+
                 Edit Employee
+
             </h2>
 
             <p class="text-muted mb-0">
-                Update employee information and profile photo.
+
+                Update employee information and profile image.
+
             </p>
+
         </div>
 
-        <div>
+
+        <div class="mt-3 mt-md-0">
+
             <a asp-action="Details"
                asp-route-id="@employeeId"
                class="btn btn-outline-secondary">
 
                 <i class="bi bi-arrow-left me-1"></i>
+
                 Back to Details
+
             </a>
+
         </div>
 
     </div>
 
 
-    <!-- Validation Summary -->
+    <!-- VALIDATION -->
     <div asp-validation-summary="ModelOnly"
-         class="alert alert-danger"
-         role="alert">
+         class="alert alert-danger">
     </div>
 
 
+    <!-- FORM -->
     <form asp-action="Edit"
           asp-route-id="@employeeId"
           method="post"
@@ -71,114 +70,164 @@
 
         @Html.AntiForgeryToken()
 
+
         <div class="row g-4">
 
-            <!-- LEFT COLUMN -->
+            <!-- MAIN FORM -->
+            <div class="col-lg-8">
+
+                <partial name="_EmployeeForm"
+                         model="Model" />
+
+            </div>
+
+
+            <!-- RIGHT SIDE -->
             <div class="col-lg-4">
 
-                <!-- Profile Card -->
-                <div class="card border-0 shadow-sm h-100">
+                <!-- PROFILE IMAGE -->
+                <div class="card shadow-sm border-0 mb-4">
 
-                    <div class="card-header bg-white border-0 pt-4 px-4">
-                        <h5 class="fw-semibold mb-0">
-                            <i class="bi bi-camera me-2"></i>
-                            Profile Photo
+                    <div class="card-header bg-white py-3">
+
+                        <h5 class="mb-0 fw-semibold">
+
+                            <i class="bi bi-person-badge me-2 text-primary"></i>
+
+                            Profile Image
+
                         </h5>
+
                     </div>
 
-                    <div class="card-body text-center px-4">
 
-                        <!-- Image Preview -->
-                        <div class="mb-4">
+                    <div class="card-body">
 
-                            @if (!string.IsNullOrWhiteSpace(Model.ProfileImage))
-                            {
-                                <img id="profilePreview"
-                                     src="@Model.ProfileImage"
-                                     alt="Employee Profile"
-                                     class="rounded-circle shadow-sm border"
-                                     style="
-                                width: 180px;
-                                height: 180px;
-                                object-fit: cover;
-                                " />
-                            }
-                            else
-                            {
-                                <div id="profilePlaceholder"
-                                     class="rounded-circle d-flex align-items-center justify-content-center mx-auto shadow-sm border bg-light"
-                                     style="
-                                    width: 180px;
-                                    height: 180px;
-                                    font-size: 3rem;
-                                    font-weight: 600;
-                                    color: #6c757d;
-                                    ">
-                                    @GetInitials()
-                                </div>
+                        <div class="text-center mb-4">
 
-                                <img id="profilePreview"
-                                     src=""
-                                     alt="Profile Preview"
-                                     class="rounded-circle shadow-sm border d-none"
-                                     style="
-                                width: 180px;
-                                height: 180px;
-                                object-fit: cover;
-                                " />
-                            }
+                            <img id="profileImagePreview"
+                                 src="@imageUrl"
+                                 alt="Employee Profile"
+                                 class="rounded-circle border shadow-sm"
+                                 style="width:160px;
+                                        height:160px;
+                                        object-fit:cover;" />
 
                         </div>
 
 
-                        <!-- File Upload -->
-                        <div class="mb-3 text-start">
+                        <div class="mb-3">
 
                             <label asp-for="ProfileImageFile"
                                    class="form-label fw-semibold">
 
-                                Profile Image
+                                Change Profile Image
 
                             </label>
 
                             <input asp-for="ProfileImageFile"
                                    type="file"
                                    class="form-control"
-                                   accept=".jpg,.jpeg,.png,.webp"
-                                   id="profileImageInput" />
+                                   accept=".jpg,.jpeg,.png,.webp" />
+
+                            <div class="form-text">
+
+                                JPG, JPEG, PNG, or WEBP.
+                                Maximum size: 5 MB.
+
+                            </div>
 
                             <span asp-validation-for="ProfileImageFile"
                                   class="text-danger">
                             </span>
 
-                            <div class="form-text">
-                                JPG, JPEG, PNG or WEBP.
-                                Maximum size: 5 MB.
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- EMPLOYEE SUMMARY -->
+                <div class="card shadow-sm border-0 mb-4">
+
+                    <div class="card-header bg-white py-3">
+
+                        <h5 class="mb-0 fw-semibold">
+
+                            <i class="bi bi-info-circle me-2 text-primary"></i>
+
+                            Employee Summary
+
+                        </h5>
+
+                    </div>
+
+
+                    <div class="card-body">
+
+                        <div class="mb-3">
+
+                            <small class="text-muted d-block">
+
+                                Employee Number
+
+                            </small>
+
+                            <div class="fw-semibold">
+
+                                @Model.Employee.EmployeeNumber
+
                             </div>
 
                         </div>
 
 
-                        <!-- Remove Image -->
-                        @if (!string.IsNullOrWhiteSpace(Model.ProfileImage))
-                        {
-                            <div class="form-check text-start mt-3">
+                        <div class="mb-3">
 
-                                <input class="form-check-input"
-                                       type="checkbox"
-                                       id="removeProfileImage"
-                                       name="RemoveProfileImage"
-                                       value="true" />
+                            <small class="text-muted d-block">
 
-                                <label class="form-check-label"
-                                       for="removeProfileImage">
+                                Employee Name
 
-                                    Remove current profile image
+                            </small>
 
-                                </label>
+                            <div class="fw-semibold">
+
+                                @string.Join(
+                                    " ",
+                                    new[]
+                                    {
+                                        Model.Employee.FirstName,
+                                        Model.Employee.MiddleName,
+                                        Model.Employee.LastName,
+                                        Model.Employee.Suffix
+                                    }
+                                    .Where(x =>
+                                        !string.IsNullOrWhiteSpace(x)))
 
                             </div>
-                        }
+
+                        </div>
+
+
+                        <div>
+
+                            <small class="text-muted d-block">
+
+                                Profile Image
+
+                            </small>
+
+                            <div class="small text-muted">
+
+                                @(string.IsNullOrWhiteSpace(
+                                    Model.Employee.ProfileImage)
+                                    ? "Default image"
+                                    : "Custom profile image")
+
+                            </div>
+
+                        </div>
 
                     </div>
 
@@ -186,545 +235,35 @@
 
             </div>
 
+        </div>
 
-            <!-- RIGHT COLUMN -->
-            <div class="col-lg-8">
 
-                <!-- Personal Information -->
-                <div class="card border-0 shadow-sm mb-4">
+        <!-- ACTIONS -->
+        <div class="card shadow-sm border-0">
 
-                    <div class="card-header bg-white border-0 pt-4 px-4">
+            <div class="card-body">
 
-                        <h5 class="fw-semibold mb-0">
-                            <i class="bi bi-person me-2"></i>
-                            Personal Information
-                        </h5>
+                <div class="d-flex justify-content-between">
 
-                    </div>
+                    <a asp-action="Details"
+                       asp-route-id="@employeeId"
+                       class="btn btn-outline-secondary">
 
-                    <div class="card-body px-4">
+                        <i class="bi bi-x-circle me-1"></i>
 
-                        <div class="row g-3">
+                        Cancel
 
-                            <!-- Employee Number -->
-                            <div class="col-md-6">
+                    </a>
 
-                                <label asp-for="EmployeeNumber"
-                                       class="form-label fw-semibold">
 
-                                    Employee Number
+                    <button type="submit"
+                            class="btn btn-primary px-4">
 
-                                </label>
+                        <i class="bi bi-check-circle me-1"></i>
 
-                                <input asp-for="EmployeeNumber"
-                                       class="form-control"
-                                       readonly />
+                        Save Changes
 
-                            </div>
-
-
-                            <!-- Email -->
-                            <div class="col-md-6">
-
-                                <label asp-for="Email"
-                                       class="form-label fw-semibold">
-
-                                    Email
-                                    <span class="text-danger">*</span>
-
-                                </label>
-
-                                <input asp-for="Email"
-                                       type="email"
-                                       class="form-control"
-                                       autocomplete="email" />
-
-                                <span asp-validation-for="Email"
-                                      class="text-danger">
-                                </span>
-
-                            </div>
-
-
-                            <!-- First Name -->
-                            <div class="col-md-4">
-
-                                <label asp-for="FirstName"
-                                       class="form-label fw-semibold">
-
-                                    First Name
-                                    <span class="text-danger">*</span>
-
-                                </label>
-
-                                <input asp-for="FirstName"
-                                       class="form-control"
-                                       autocomplete="given-name" />
-
-                                <span asp-validation-for="FirstName"
-                                      class="text-danger">
-                                </span>
-
-                            </div>
-
-
-                            <!-- Middle Name -->
-                            <div class="col-md-4">
-
-                                <label asp-for="MiddleName"
-                                       class="form-label fw-semibold">
-
-                                    Middle Name
-
-                                </label>
-
-                                <input asp-for="MiddleName"
-                                       class="form-control" />
-
-                                <span asp-validation-for="MiddleName"
-                                      class="text-danger">
-                                </span>
-
-                            </div>
-
-
-                            <!-- Last Name -->
-                            <div class="col-md-4">
-
-                                <label asp-for="LastName"
-                                       class="form-label fw-semibold">
-
-                                    Last Name
-                                    <span class="text-danger">*</span>
-
-                                </label>
-
-                                <input asp-for="LastName"
-                                       class="form-control"
-                                       autocomplete="family-name" />
-
-                                <span asp-validation-for="LastName"
-                                      class="text-danger">
-                                </span>
-
-                            </div>
-
-
-                            <!-- Suffix -->
-                            <div class="col-md-4">
-
-                                <label asp-for="Suffix"
-                                       class="form-label fw-semibold">
-
-                                    Suffix
-
-                                </label>
-
-                                <input asp-for="Suffix"
-                                       class="form-control"
-                                       placeholder="Jr., Sr., III..." />
-
-                                <span asp-validation-for="Suffix"
-                                      class="text-danger">
-                                </span>
-
-                            </div>
-
-
-                            <!-- Birth Date -->
-                            <div class="col-md-4">
-
-                                <label asp-for="BirthDate"
-                                       class="form-label fw-semibold">
-
-                                    Birth Date
-                                    <span class="text-danger">*</span>
-
-                                </label>
-
-                                <input asp-for="BirthDate"
-                                       type="date"
-                                       class="form-control" />
-
-                                <span asp-validation-for="BirthDate"
-                                      class="text-danger">
-                                </span>
-
-                            </div>
-
-
-                            <!-- Gender -->
-                            <div class="col-md-4">
-
-                                <label asp-for="Gender"
-                                       class="form-label fw-semibold">
-
-                                    Gender
-                                    <span class="text-danger">*</span>
-
-                                </label>
-
-                                <select asp-for="Gender"
-                                        class="form-select"
-                                        asp-items="Html.GetEnumSelectList<Gender>()">
-
-                                    <option value="">
-                                        -- Select Gender --
-                                    </option>
-
-                                </select>
-
-                                <span asp-validation-for="Gender"
-                                      class="text-danger">
-                                </span>
-
-                            </div>
-
-
-                            <!-- Civil Status -->
-                            <div class="col-md-4">
-
-                                <label asp-for="CivilStatus"
-                                       class="form-label fw-semibold">
-
-                                    Civil Status
-
-                                </label>
-
-                                <select asp-for="CivilStatus"
-                                        class="form-select">
-
-                                    <option value="">
-                                        -- Select Civil Status --
-                                    </option>
-
-                                    <option value="Single">
-                                        Single
-                                    </option>
-
-                                    <option value="Married">
-                                        Married
-                                    </option>
-
-                                    <option value="Widowed">
-                                        Widowed
-                                    </option>
-
-                                    <option value="Separated">
-                                        Separated
-                                    </option>
-
-                                    <option value="Divorced">
-                                        Divorced
-                                    </option>
-
-                                </select>
-
-                                <span asp-validation-for="CivilStatus"
-                                      class="text-danger">
-                                </span>
-
-                            </div>
-
-
-                            <!-- Phone -->
-                            <div class="col-md-4">
-
-                                <label asp-for="PhoneNumber"
-                                       class="form-label fw-semibold">
-
-                                    Phone Number
-
-                                </label>
-
-                                <input asp-for="PhoneNumber"
-                                       class="form-control"
-                                       autocomplete="tel" />
-
-                                <span asp-validation-for="PhoneNumber"
-                                      class="text-danger">
-                                </span>
-
-                            </div>
-
-
-                            <!-- Address -->
-                            <div class="col-md-8">
-
-                                <label asp-for="Address"
-                                       class="form-label fw-semibold">
-
-                                    Address
-
-                                </label>
-
-                                <input asp-for="Address"
-                                       class="form-control"
-                                       autocomplete="street-address" />
-
-                                <span asp-validation-for="Address"
-                                      class="text-danger">
-                                </span>
-
-                            </div>
-
-                        </div>
-
-                    </div>
-
-                </div>
-
-
-                <!-- Employment Information -->
-                <div class="card border-0 shadow-sm mb-4">
-
-                    <div class="card-header bg-white border-0 pt-4 px-4">
-
-                        <h5 class="fw-semibold mb-0">
-                            <i class="bi bi-briefcase me-2"></i>
-                            Employment Information
-                        </h5>
-
-                    </div>
-
-                    <div class="card-body px-4">
-
-                        <div class="row g-3">
-
-                            <!-- Department -->
-                            <div class="col-md-6">
-
-                                <label asp-for="DepartmentId"
-                                       class="form-label fw-semibold">
-
-                                    Department
-                                    <span class="text-danger">*</span>
-
-                                </label>
-
-                                <select asp-for="DepartmentId"
-                                        class="form-select"
-                                        id="departmentSelect">
-
-                                    <option value="">
-                                        -- Select Department --
-                                    </option>
-                                    @foreach (var department in departments)
-                                    {
-                                        <option value="@department.Id">
-                                            @department.Name
-                                        </option>
-                                    }
-
-                                </select>
-
-                                <span asp-validation-for="DepartmentId"
-                                      class="text-danger">
-                                </span>
-
-                            </div>
-
-
-                            <!-- Position -->
-                            <div class="col-md-6">
-
-                                <label asp-for="PositionId"
-                                       class="form-label fw-semibold">
-
-                                    Position
-                                    <span class="text-danger">*</span>
-
-                                </label>
-
-                                <select asp-for="PositionId"
-                                        class="form-select"
-                                        id="positionSelect">
-
-                                    <option value="">
-                                        -- Select Position --
-                                    </option>
-
-                                    @foreach (var position in positions)
-                                    {
-                                        <option value="@position.Id">
-                                            @position.Code -
-                                            @position.Name
-                                        </option>
-                                    }
-
-                                </select>
-
-                                <span asp-validation-for="PositionId"
-                                      class="text-danger">
-                                </span>
-
-                            </div>
-
-
-                            <!-- Employment Type -->
-                            <div class="col-md-4">
-
-                                <label asp-for="EmploymentType"
-                                       class="form-label fw-semibold">
-
-                                    Employment Type
-                                    <span class="text-danger">*</span>
-
-                                </label>
-
-                                <select asp-for="EmploymentType"
-                                        class="form-select"
-                                        asp-items="Html.GetEnumSelectList<EmploymentType>()">
-
-                                    <option value="">
-                                        -- Select Employment Type --
-                                    </option>
-
-                                </select>
-
-                                <span asp-validation-for="EmploymentType"
-                                      class="text-danger">
-                                </span>
-
-                            </div>
-
-
-                            <!-- Status -->
-                            <div class="col-md-4">
-
-                                <label asp-for="Status"
-                                       class="form-label fw-semibold">
-
-                                    Status
-                                    <span class="text-danger">*</span>
-
-                                </label>
-
-                                <select asp-for="Status"
-                                        class="form-select"
-                                        asp-items="Html.GetEnumSelectList<EmployeeStatus>()">
-
-                                    <option value="">
-                                        -- Select Status --
-                                    </option>
-
-                                </select>
-
-                                <span asp-validation-for="Status"
-                                      class="text-danger">
-                                </span>
-
-                            </div>
-
-
-                            <!-- Basic Salary -->
-                            <div class="col-md-4">
-
-                                <label asp-for="BasicSalary"
-                                       class="form-label fw-semibold">
-
-                                    Basic Salary
-                                    <span class="text-danger">*</span>
-
-                                </label>
-
-                                <div class="input-group">
-
-                                    <span class="input-group-text">
-                                        ₱
-                                    </span>
-
-                                    <input asp-for="BasicSalary"
-                                           type="number"
-                                           step="0.01"
-                                           min="0"
-                                           class="form-control" />
-
-                                </div>
-
-                                <span asp-validation-for="BasicSalary"
-                                      class="text-danger">
-                                </span>
-
-                            </div>
-
-
-                            <!-- Hire Date -->
-                            <div class="col-md-6">
-
-                                <label asp-for="HireDate"
-                                       class="form-label fw-semibold">
-
-                                    Hire Date
-                                    <span class="text-danger">*</span>
-
-                                </label>
-
-                                <input asp-for="HireDate"
-                                       type="date"
-                                       class="form-control" />
-
-                                <span asp-validation-for="HireDate"
-                                      class="text-danger">
-                                </span>
-
-                            </div>
-
-
-                            <!-- Regularization Date -->
-                            <div class="col-md-6">
-
-                                <label asp-for="RegularizationDate"
-                                       class="form-label fw-semibold">
-
-                                    Regularization Date
-
-                                </label>
-
-                                <input asp-for="RegularizationDate"
-                                       type="date"
-                                       class="form-control" />
-
-                                <span asp-validation-for="RegularizationDate"
-                                      class="text-danger">
-                                </span>
-
-                            </div>
-
-                        </div>
-
-                    </div>
-
-                </div>
-
-
-                <!-- Actions -->
-                <div class="card border-0 shadow-sm">
-
-                    <div class="card-body px-4 py-3">
-
-                        <div class="d-flex justify-content-end gap-2">
-
-                            <a asp-action="Details"
-                               asp-route-id="@employeeId"
-                               class="btn btn-outline-secondary">
-
-                                <i class="bi bi-x-lg me-1"></i>
-                                Cancel
-
-                            </a>
-
-                            <button type="submit"
-                                    class="btn btn-primary">
-
-                                <i class="bi bi-check-lg me-1"></i>
-                                Save Changes
-
-                            </button>
-
-                        </div>
-
-                    </div>
+                    </button>
 
                 </div>
 
@@ -737,75 +276,68 @@
 </div>
 
 
-@section Scripts
-{
+@section Scripts {
+
     <partial name="_ValidationScriptsPartial" />
 
     <script>
 
         document.addEventListener("DOMContentLoaded", function () {
 
+            /*
+             * ======================================================
+             * PROFILE IMAGE PREVIEW
+             * ======================================================
+             */
+
             const imageInput =
-                document.getElementById("profileImageInput");
+                document.getElementById("ProfileImageFile");
 
-            const preview =
-                document.getElementById("profilePreview");
-
-            const placeholder =
-                document.getElementById("profilePlaceholder");
-
-            const departmentSelect =
-                document.getElementById("departmentSelect");
-
-            const positionSelect =
-                document.getElementById("positionSelect");
+            const imagePreview =
+                document.getElementById("profileImagePreview");
 
 
-            // ============================================
-            // PROFILE IMAGE PREVIEW
-            // ============================================
+            if (imageInput && imagePreview) {
 
-            if (imageInput) {
+                imageInput.addEventListener("change", function () {
 
-                imageInput.addEventListener("change", function (event) {
+                    const file = this.files[0];
 
-                    const file =
-                        event.target.files[0];
-
-                    if (!file)
+                    if (!file) {
                         return;
+                    }
 
 
-                    // Validate file type
                     const allowedTypes = [
                         "image/jpeg",
                         "image/png",
                         "image/webp"
                     ];
 
+
                     if (!allowedTypes.includes(file.type)) {
 
                         alert(
-                            "Please select a JPG, PNG or WEBP image."
+                            "Please select a JPG, JPEG, PNG, or WEBP image."
                         );
 
-                        imageInput.value = "";
+                        this.value = "";
 
                         return;
                     }
 
 
-                    // Validate file size - 5 MB
                     const maxSize =
                         5 * 1024 * 1024;
+
 
                     if (file.size > maxSize) {
 
                         alert(
-                            "The selected image cannot exceed 5 MB."
+                            "Profile image must not exceed 5 MB."
                         );
 
-                        imageInput.value = "";
+                        this.value = "";
 
                         return;
                     }
@@ -815,25 +347,10 @@
                         new FileReader();
 
 
-                    reader.onload = function (e) {
+                    reader.onload = function (event) {
 
-                        if (preview) {
-
-                            preview.src =
-                                e.target.result;
-
-                            preview.classList.remove(
-                                "d-none"
-                            );
-                        }
-
-
-                        if (placeholder) {
-
-                            placeholder.classList.add(
-                                "d-none"
-                            );
-                        }
+                        imagePreview.src =
+                            event.target.result;
 
                     };
 
@@ -845,138 +362,92 @@
             }
 
 
-            // ============================================
-            // REMOVE PROFILE IMAGE
-            // ============================================
+            /*
+             * ======================================================
+             * DEPARTMENT -> POSITION
+             * ======================================================
+             */
 
-            const removeImageCheckbox =
-                document.getElementById(
-                    "removeProfileImage"
+            const departmentSelect =
+                document.getElementById("DepartmentId");
+
+            const positionSelect =
+                document.getElementById("PositionId");
+
+
+            if (!departmentSelect || !positionSelect) {
+                return;
+            }
+
+
+            const existingPositionId =
+                positionSelect.value;
+
+
+            const positionOptions =
+                Array.from(
+                    positionSelect.querySelectorAll(
+                        "option[data-department-id]"
+                    )
                 );
 
-            if (removeImageCheckbox) {
 
-                removeImageCheckbox.addEventListener(
-                    "change",
-                    function () {
+            function filterPositions(resetPosition) {
 
-                        if (this.checked) {
+                const departmentId =
+                    departmentSelect.value;
 
-                            if (preview) {
 
-                                preview.classList.add(
-                                    "opacity-50"
-                                );
+                positionOptions.forEach(function (option) {
 
-                            }
+                    const optionDepartmentId =
+                        option.getAttribute(
+                            "data-department-id"
+                        );
 
-                        }
-                        else {
 
-                            if (preview) {
+                    const belongsToDepartment =
+                        departmentId !== "" &&
+                        optionDepartmentId === departmentId;
 
-                                preview.classList.remove(
-                                    "opacity-50"
-                                );
 
-                            }
+                    option.hidden =
+                        !belongsToDepartment;
 
-                        }
+                    option.disabled =
+                        !belongsToDepartment;
 
-                    }
-                );
+                });
+
+
+                if (resetPosition) {
+
+                    positionSelect.value = "";
+
+                }
+                else {
+
+                    positionSelect.value =
+                        existingPositionId;
+
+                }
 
             }
 
 
-            // ============================================
-            // DEPARTMENT → POSITION
-            // ============================================
-
-            if (departmentSelect) {
-
-                departmentSelect.addEventListener(
-                    "change",
-                    async function () {
-
-                        const departmentId =
-                            this.value;
-
-                        positionSelect.innerHTML =
-                            '<option value="">-- Select Position --</option>';
+            // Initial page load.
+            filterPositions(false);
 
 
-                        if (!departmentId)
-                            return;
+            // Department changed.
+            departmentSelect.addEventListener(
+                "change",
+                function () {
 
+                    filterPositions(true);
 
-                        try {
-
-                            positionSelect.disabled =
-                                true;
-
-
-                            const response =
-                                await fetch(
-                                    `/Employees/ByDepartment?departmentId=${departmentId}`
-                                );
-
-
-                            if (!response.ok) {
-
-                                throw new Error(
-                                    "Unable to load positions."
-                                );
-
-                            }
-
-
-                            const positions =
-                                await response.json();
-
-
-                            positions.forEach(
-                                function (position) {
-
-                                    const option =
-                                        document.createElement(
-                                            "option"
-                                        );
-
-                                    option.value =
-                                        position.id;
-
-                                    option.textContent =
-                                        `${position.code} - ${position.name}`;
-
-                                    positionSelect.appendChild(
-                                        option
-                                    );
-
-                                }
-                            );
-
-                        }
-                        catch (error) {
-
-                            console.error(error);
-
-                            alert(
-                                "Unable to load positions."
-                            );
-
-                        }
-                        finally {
-
-                            positionSelect.disabled =
-                                false;
-
-                        }
-
-                    }
-                );
-
-            }
+                }
+            );
 
         });
 

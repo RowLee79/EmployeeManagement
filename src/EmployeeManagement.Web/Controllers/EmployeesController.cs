@@ -1,17 +1,20 @@
-﻿using EmployeeManagement.Application.Departments.Interfaces;
+﻿using Azure.Core;
+using EmployeeManagement.Application.Departments.Interfaces;
 using EmployeeManagement.Application.Employees.Interfaces;
 using EmployeeManagement.Application.Employees.Models;
 using EmployeeManagement.Application.Positions.Interfaces;
 using EmployeeManagement.Application.Positions.Models;
 using EmployeeManagement.Application.Reporting;
 using EmployeeManagement.Domain.Enums;
+using EmployeeManagement.Web.Models.Employees;
 using EmployeeManagement.Web.Services;
+using EmployeeManagement.Web.Services.Reporting;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace EmployeeManagement.Web.Controllers;
 
-[Authorize]
+[Authorize(Roles = "Administrator,HR Manager,Manager")]
 public class EmployeesController : Controller
 {
     private readonly IEmployeeService _employeeService;
@@ -19,19 +22,22 @@ public class EmployeesController : Controller
     private readonly IPositionService _positionService;
     private readonly IFileStorageService _fileStorageService;
     private readonly IReportingService _reportingService;
+    private readonly IWebHostEnvironment _environment;
 
     public EmployeesController(
         IEmployeeService employeeService,
         IDepartmentService departmentService,
         IPositionService positionService,
         IFileStorageService fileStorageService,
-        IReportingService reportingService)
+        IReportingService reportingService,
+        IWebHostEnvironment environment)
     {
         _employeeService = employeeService;
         _departmentService = departmentService;
         _positionService = positionService;
         _fileStorageService = fileStorageService;
         _reportingService = reportingService;
+        _environment = environment;
     }
 
     // =========================================================
@@ -90,25 +96,17 @@ public class EmployeesController : Controller
     // CREATE - GET
     // =========================================================
 
-    [HttpGet]
     [Authorize(Roles = "Administrator,HR Manager")]
+    [HttpGet]
     public async Task<IActionResult> Create()
     {
-        await LoadDepartments();
-
-        ViewBag.Positions =
-            Array.Empty<PositionListModel>();
+        await LoadEmployeeFormLookups();
 
         var model = new EmployeeCreateModel
         {
             HireDate = DateTime.Today,
-
             Status = EmployeeStatus.Active,
-
-            EmploymentType =
-                EmploymentType.Regular,
-
-            Gender = Gender.Male
+            EmploymentType = EmploymentType.Regular
         };
 
         return View(model);
@@ -118,64 +116,31 @@ public class EmployeesController : Controller
     // CREATE - POST
     // =========================================================
 
+ 
+    [Authorize(Roles = "Administrator,HR Manager")]
     [HttpPost]
     [ValidateAntiForgeryToken]
-    [Authorize(Roles = "Administrator,HR Manager")]
     public async Task<IActionResult> Create(EmployeeCreateModel model)
     {
         if (!ModelState.IsValid)
         {
-            await LoadDepartments();
-
-            if (model.DepartmentId > 0)
-                await LoadPositions(model.DepartmentId);
-            else
-                ViewBag.Positions = Array.Empty<PositionListModel>();
+            await LoadEmployeeFormLookups();
 
             return View(model);
         }
 
-        try
-        {
-            if (model.ProfileImageFile != null)
-            {
-                model.ProfileImage =
-                    await _fileStorageService.SaveEmployeeProfileImageAsync(
-                        model.ProfileImageFile);
-            }
+        var employeeId = await _employeeService.CreateAsync(model);
 
-            var employeeId = await _employeeService.CreateAsync(model);
-
-            TempData["SuccessMessage"] =
-                "Employee created successfully.";
-
-            return RedirectToAction(
-                nameof(Details),
-                new { id = employeeId });
-        }
-        catch (InvalidOperationException ex)
-        {
-            ModelState.AddModelError(
-                string.Empty,
-                ex.Message);
-
-            await LoadDepartments();
-
-            if (model.DepartmentId > 0)
-                await LoadPositions(model.DepartmentId);
-            else
-                ViewBag.Positions = Array.Empty<PositionListModel>();
-
-            return View(model);
-        }
+        return RedirectToAction(
+            nameof(Details),
+            new { id = employeeId });
     }
-
     // =========================================================
     // EDIT - GET
     // =========================================================
 
-    [HttpGet]
     [Authorize(Roles = "Administrator,HR Manager")]
+    [HttpGet]
     public async Task<IActionResult> Edit(int id)
     {
         var employee = await _employeeService.GetByIdAsync(id);
@@ -183,31 +148,33 @@ public class EmployeesController : Controller
         if (employee == null)
             return NotFound();
 
-        var model = new EmployeeEditModel
-        {
-            EmployeeNumber = employee.EmployeeNumber,
-            FirstName = employee.FirstName,
-            MiddleName = employee.MiddleName,
-            LastName = employee.LastName,
-            Suffix = employee.Suffix,
-            BirthDate = employee.BirthDate,
-            Gender = employee.Gender,
-            CivilStatus = employee.CivilStatus.ToString(),
-            Email = employee.Email,
-            PhoneNumber = employee.PhoneNumber,
-            Address = employee.Address,
-            ProfileImage = employee.ProfileImage,
-            HireDate = employee.HireDate,
-            RegularizationDate = employee.RegularizationDate,
-            EmploymentType = employee.EmploymentType,
-            Status = employee.Status,
-            BasicSalary = employee.BasicSalary,
-            DepartmentId = employee.DepartmentId,
-            PositionId = employee.PositionId
-        };
+        await LoadEmployeeFormLookups();
 
-        await LoadDepartments();
-        await LoadPositions(employee.DepartmentId);
+        var model = new EmployeeEditViewModel
+        {
+            Employee = new EmployeeEditModel
+            {
+                EmployeeNumber = employee.EmployeeNumber,
+                FirstName = employee.FirstName,
+                MiddleName = employee.MiddleName,
+                LastName = employee.LastName,
+                Suffix = employee.Suffix,
+                BirthDate = employee.BirthDate,
+                Gender = employee.Gender,
+                CivilStatus = employee.CivilStatus,
+                Email = employee.Email,
+                PhoneNumber = employee.PhoneNumber,
+                Address = employee.Address,
+                HireDate = employee.HireDate,
+                RegularizationDate = employee.RegularizationDate,
+                EmploymentType = employee.EmploymentType,
+                Status = employee.Status,
+                BasicSalary = employee.BasicSalary,
+                DepartmentId = employee.DepartmentId,
+                PositionId = employee.PositionId,
+                ProfileImage = employee.ProfileImage
+            }
+        };
 
         ViewBag.EmployeeId = id;
 
@@ -218,111 +185,51 @@ public class EmployeesController : Controller
     // EDIT - POST
     // =========================================================
 
+
+    [Authorize(Roles = "Administrator,HR Manager")]
     [HttpPost]
     [ValidateAntiForgeryToken]
-    [Authorize(Roles = "Administrator,HR Manager")]
     public async Task<IActionResult> Edit(
-     int id,
-     EmployeeEditModel model)
+    int id,
+    EmployeeEditViewModel model)
     {
         if (!ModelState.IsValid)
         {
-            await LoadDepartments();
-
-            if (model.DepartmentId > 0)
-                await LoadPositions(model.DepartmentId);
-            else
-                ViewBag.Positions = Array.Empty<PositionListModel>();
+            await LoadEmployeeFormLookups();
 
             ViewBag.EmployeeId = id;
 
             return View(model);
         }
 
-        try
-        {
-            // Get existing employee first
-            var existingEmployee =
-                await _employeeService.GetByIdAsync(id);
+        var employee = await _employeeService.GetByIdAsync(id);
 
-            if (existingEmployee == null)
-                return NotFound();
-
-            // Upload new image if supplied
-            if (model.ProfileImageFile != null)
-            {
-                var oldImage = existingEmployee.ProfileImage;
-
-                model.ProfileImage =
-                    await _fileStorageService.SaveEmployeeProfileImageAsync(
-                        model.ProfileImageFile);
-
-                // Delete old image
-                if (!string.IsNullOrWhiteSpace(oldImage))
-                {
-                    await _fileStorageService.DeleteAsync(oldImage);
-                }
-            }
-            else
-            {
-                // Keep existing image
-                model.ProfileImage =
-                    existingEmployee.ProfileImage;
-            }
-
-            var success =
-                await _employeeService.UpdateAsync(id, model);
-
-            if (!success)
-                return NotFound();
-
-            TempData["SuccessMessage"] =
-                "Employee updated successfully.";
-
-            return RedirectToAction(
-                nameof(Details),
-                new { id });
-        }
-        catch (InvalidOperationException ex)
-        {
-            ModelState.AddModelError(
-                string.Empty,
-                ex.Message);
-
-            await LoadDepartments();
-
-            if (model.DepartmentId > 0)
-                await LoadPositions(model.DepartmentId);
-            else
-                ViewBag.Positions = Array.Empty<PositionListModel>();
-
-            ViewBag.EmployeeId = id;
-
-            return View(model);
-        }
-    }
-
-    // =========================================================
-    // DELETE
-    // =========================================================
-
-    [HttpPost]
-    [ValidateAntiForgeryToken]
-    [Authorize(Roles = "Administrator,HR Manager")]
-    public async Task<IActionResult> Delete(int id)
-    {
-        var success =
-            await _employeeService.DeleteAsync(id);
-
-        if (!success)
-        {
+        if (employee == null)
             return NotFound();
+
+        // Keep existing image if no new image was selected.
+        var profileImagePath = employee.ProfileImage;
+
+        if (model.ProfileImageFile != null &&
+            model.ProfileImageFile.Length > 0)
+        {
+            profileImagePath = await SaveProfileImageAsync(
+                model.ProfileImageFile,
+                employee.EmployeeNumber);
         }
 
-        TempData["SuccessMessage"] =
-            "Employee deleted successfully.";
+        model.Employee.ProfileImage = profileImagePath;
 
-        return RedirectToAction(nameof(Index));
+        var updated = await _employeeService.UpdateAsync(
+            id,
+            model.Employee);
+
+        if (!updated)
+            return NotFound();
+
+        return RedirectToAction(
+            nameof(Details),
+            new { id });
     }
 
     // =========================================================
@@ -453,13 +360,11 @@ public class EmployeesController : Controller
             HireDateTo = searchModel.HireDateTo
         };
 
-        var pdf =
-            await _reportingService
-                .GetEmployeeMasterListPdfAsync(
-                    reportRequest);
+        var file = await _reportingService
+           .GenerateEmployeeMasterListAsync(reportRequest, "PDF");
 
         return File(
-            pdf,
+            file,
             "application/pdf",
             "EmployeeMasterList.pdf");
     }
@@ -486,4 +391,154 @@ public class EmployeesController : Controller
             "_EmployeeResults",
             result);
     }
+
+    private async Task LoadEmployeeFormLookups()
+    {
+        ViewBag.Departments =
+            await _departmentService.GetLookupAsync();
+
+        ViewBag.Positions =
+            await _positionService.GetLookupAsync();
+    }
+
+    private async Task<string> SaveProfileImageAsync(
+    IFormFile file,
+    string employeeNumber)
+    {
+        var uploadsFolder = Path.Combine(
+            _environment.WebRootPath,
+            "uploads",
+            "employees");
+
+        Directory.CreateDirectory(uploadsFolder);
+
+        var extension = Path.GetExtension(file.FileName)
+            .ToLowerInvariant();
+
+        var allowedExtensions = new[]
+        {
+        ".jpg",
+        ".jpeg",
+        ".png",
+        ".webp"
+    };
+
+        if (!allowedExtensions.Contains(extension))
+        {
+            throw new InvalidOperationException(
+                "Only JPG, JPEG, PNG, and WEBP images are allowed.");
+        }
+
+        if (file.Length > 5 * 1024 * 1024)
+        {
+            throw new InvalidOperationException(
+                "Profile image must not exceed 5 MB.");
+        }
+
+        var safeEmployeeNumber = string.Join(
+            "_",
+            employeeNumber.Split(
+                Path.GetInvalidFileNameChars(),
+                StringSplitOptions.RemoveEmptyEntries));
+
+        var fileName =
+            $"{safeEmployeeNumber}_{Guid.NewGuid():N}{extension}";
+
+        var filePath = Path.Combine(
+            uploadsFolder,
+            fileName);
+
+        await using var stream =
+            new FileStream(
+                filePath,
+                FileMode.Create);
+
+        await file.CopyToAsync(stream);
+
+        return $"/uploads/employees/{fileName}";
+    }
+
+    [Authorize(Roles = "Administrator,HR Manager")]
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Delete(int id)
+    {
+        var deleted = await _employeeService.DeleteAsync(id);
+
+        if (!deleted)
+        {
+            return NotFound();
+        }
+
+        TempData["SuccessMessage"] =
+            "Employee was deleted successfully.";
+
+        return RedirectToAction(nameof(Index));
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> Deleted()
+    {
+        var employees =
+            await _employeeService.GetDeletedAsync();
+
+        return View(employees);
+    }
+
+    [Authorize(Roles = "Administrator,HR Manager")]
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Restore(int id)
+    {
+        var restored =
+            await _employeeService.RestoreAsync(id);
+
+        if (!restored)
+        {
+            return NotFound();
+        }
+
+        TempData["SuccessMessage"] =
+            "Employee was restored successfully.";
+
+        return RedirectToAction(nameof(Deleted));
+    }
+
+    [Authorize(Roles = "Administrator,HR Manager")]
+    [HttpGet]
+    public async Task<IActionResult> DeletedDetails(int id)
+    {
+        var employee = await _employeeService.GetDeletedByIdAsync(id);
+
+        if (employee == null)
+        {
+            return NotFound();
+        }
+
+        return View(employee);
+    }
+    [Authorize(Roles = "Administrator,HR Manager")]
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> PermanentlyDelete(int id)
+    {
+        var deleted = await _employeeService.PermanentlyDeleteAsync(id);
+
+        if (!deleted)
+        {
+            return NotFound();
+        }
+
+        TempData["SuccessMessage"] =
+            "Employee was permanently deleted.";
+
+        return RedirectToAction(nameof(Deleted));
+    }
+
+    //[HttpGet]
+    //public IActionResult TestError()
+    //{
+    //    throw new InvalidOperationException(
+    //        "This is a test exception.");
+    //}
 }

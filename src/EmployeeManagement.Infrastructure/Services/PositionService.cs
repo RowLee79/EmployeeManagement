@@ -85,39 +85,74 @@ public class PositionService :IPositionService
             .FirstOrDefaultAsync();
     }
 
-    public async Task<int> CreateAsync(PositionCreateModel model)
+    public async Task<int> CreateAsync(
+    PositionCreateModel model)
     {
+        var code = model.Code.Trim().ToUpper();
+        var name = model.Name.Trim();
+
         if (model.MinimumSalary.HasValue &&
-            model.MaximumSalary.HasValue &&
-            model.MinimumSalary > model.MaximumSalary)
+            model.MinimumSalary.Value < 0)
         {
             throw new InvalidOperationException(
-                "Minimum salary cannot be greater than maximum salary.");
+                "Minimum salary cannot be negative.");
+        }
+
+        if (model.MaximumSalary.HasValue &&
+            model.MaximumSalary.Value < 0)
+        {
+            throw new InvalidOperationException(
+                "Maximum salary cannot be negative.");
+        }
+
+        if (model.MinimumSalary.HasValue &&
+            model.MaximumSalary.HasValue &&
+            model.MaximumSalary.Value < model.MinimumSalary.Value)
+        {
+            throw new InvalidOperationException(
+                "Maximum salary cannot be less than minimum salary.");
         }
 
         var exists = await _context.Positions
             .AnyAsync(x =>
                 !x.IsDeleted &&
-                (x.Code == model.Code ||
-                 (x.Name == model.Name &&
-                  x.DepartmentId == model.DepartmentId)));
+                (x.Code == code || x.Name == name));
 
         if (exists)
+        {
             throw new InvalidOperationException(
                 "A position with the same code or name already exists.");
+        }
+
+        var departmentExists =
+            await _context.Departments.AnyAsync(x =>
+                x.Id == model.DepartmentId &&
+                !x.IsDeleted &&
+                x.IsActive);
+
+        if (!departmentExists)
+        {
+            throw new InvalidOperationException(
+                "The selected department is invalid.");
+        }
 
         var position = new Domain.Entities.Position
         {
-            Code = model.Code.Trim().ToUpper(),
-            Name = model.Name.Trim(),
+            Code = code,
+            Name = name,
             Description = model.Description?.Trim(),
+
+            DepartmentId = model.DepartmentId,
+
             MinimumSalary = model.MinimumSalary,
             MaximumSalary = model.MaximumSalary,
-            IsActive = model.IsActive,
-            DepartmentId = model.DepartmentId,
-            CreatedDate = DateTime.UtcNow,
-            CreatedBy = _currentUserService.Email ?? "System"
 
+            IsActive = model.IsActive,
+
+            CreatedDate = DateTime.UtcNow,
+            CreatedBy = _currentUserService.Email ?? "System",
+
+            IsDeleted = false
         };
 
         _context.Positions.Add(position);
@@ -128,52 +163,95 @@ public class PositionService :IPositionService
     }
 
     public async Task<bool> UpdateAsync(
-        int id,
-        PositionCreateModel model)
+      int id,
+      PositionCreateModel model)
     {
-        var position = await _context.Positions
-            .FirstOrDefaultAsync(x =>
-                x.Id == id &&
-                !x.IsDeleted);
+        var position =
+            await _context.Positions
+                .FirstOrDefaultAsync(x =>
+                    x.Id == id &&
+                    !x.IsDeleted);
 
         if (position is null)
+        {
             return false;
+        }
+
+        var code = model.Code.Trim().ToUpper();
+        var name = model.Name.Trim();
+
+        if (model.MinimumSalary.HasValue &&
+            model.MinimumSalary.Value < 0)
+        {
+            throw new InvalidOperationException(
+                "Minimum salary cannot be negative.");
+        }
+
+        if (model.MaximumSalary.HasValue &&
+            model.MaximumSalary.Value < 0)
+        {
+            throw new InvalidOperationException(
+                "Maximum salary cannot be negative.");
+        }
 
         if (model.MinimumSalary.HasValue &&
             model.MaximumSalary.HasValue &&
-            model.MinimumSalary > model.MaximumSalary)
+            model.MaximumSalary.Value < model.MinimumSalary.Value)
         {
             throw new InvalidOperationException(
-                "Minimum salary cannot be greater than maximum salary.");
+                "Maximum salary cannot be less than minimum salary.");
         }
 
         var exists = await _context.Positions
             .AnyAsync(x =>
                 x.Id != id &&
                 !x.IsDeleted &&
-                (x.Code == model.Code ||
-                 (x.Name == model.Name &&
-                  x.DepartmentId == model.DepartmentId)));
+                (x.Code == code || x.Name == name));
 
         if (exists)
+        {
             throw new InvalidOperationException(
                 "A position with the same code or name already exists.");
+        }
 
-        position.Code = model.Code.Trim().ToUpper();
-        position.Name = model.Name.Trim();
+        var departmentExists =
+            await _context.Departments.AnyAsync(x =>
+                x.Id == model.DepartmentId &&
+                !x.IsDeleted &&
+                x.IsActive);
+
+        if (!departmentExists)
+        {
+            throw new InvalidOperationException(
+                "The selected department is invalid.");
+        }
+
+        position.Code = code;
+        position.Name = name;
         position.Description = model.Description?.Trim();
-        position.MinimumSalary = model.MinimumSalary;
-        position.MaximumSalary = model.MaximumSalary;
-        position.IsActive = model.IsActive;
-        position.DepartmentId = model.DepartmentId;
-        position.UpdatedDate = DateTime.UtcNow;
-        position.UpdatedBy = _currentUserService.Email ?? "System";
+
+        position.DepartmentId =
+            model.DepartmentId;
+
+        position.MinimumSalary =
+            model.MinimumSalary;
+
+        position.MaximumSalary =
+            model.MaximumSalary;
+
+        position.IsActive =
+            model.IsActive;
+
+        position.UpdatedDate =
+            DateTime.UtcNow;
+
+        position.UpdatedBy =
+            _currentUserService.Email ?? "System";
 
         await _context.SaveChangesAsync();
 
         return true;
     }
-
     public async Task<bool> DeleteAsync(int id)
     {
         var position = await _context.Positions

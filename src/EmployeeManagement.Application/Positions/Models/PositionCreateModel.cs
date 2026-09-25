@@ -1,28 +1,23 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using EmployeeManagement.Application.Departments.Models;
 
 namespace EmployeeManagement.Application.Positions.Models;
 
 public class PositionCreateModel
 {
-    [Required]
-    [StringLength(20)]
-    public string Code { get; set; } = null!;
+    public string Code { get; set; } = string.Empty;
 
-    [Required]
-    [StringLength(150)]
-    public string Name { get; set; } = null!;
+    public string Name { get; set; } = string.Empty;
 
-    [StringLength(500)]
-    public string? Description { get; set; }
+    public int DepartmentId { get; set; }
 
-    [Range(0, 999999999)]
     public decimal? MinimumSalary { get; set; }
 
-    [Range(0, 999999999)]
     public decimal? MaximumSalary { get; set; }
+
+    public string? Description { get; set; }
 
     public bool IsActive { get; set; } = true;
 
-    [Required]
-    public int DepartmentId { get; set; }
+    public IReadOnlyList<DepartmentLookup> Departments { get; set; }
+        = [];
 }

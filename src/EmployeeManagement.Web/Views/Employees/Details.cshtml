@@ -628,4 +628,112 @@
 
     </div>
 
+
+  <!-- Audit Information -->
+<div class="card border-0 shadow-sm mt-4">
+
+    <div class="card-header bg-white">
+
+        <h5 class="mb-0 fw-bold">
+            <i class="bi bi-clock-history"></i>
+            Audit Information
+        </h5>
+
+    </div>
+
+    <div class="card-body">
+
+        <div class="row g-4">
+
+            <!-- Created -->
+            <div class="col-md-4">
+
+                <div class="text-muted small mb-1">
+                    Created By
+                </div>
+
+                <div class="fw-semibold">
+                    @(string.IsNullOrWhiteSpace(Model.CreatedBy)
+                        ? "N/A"
+                        : Model.CreatedBy)
+                </div>
+
+                @if (Model.CreatedDate != DateTime.MinValue)
+                {
+                    <div class="small text-muted mt-1">
+                        @Model.CreatedDate.ToLocalTime().ToString("dd-MMM-yyyy hh:mm tt")
+                    </div>
+                }
+                else
+                {
+                    <div class="small text-muted mt-1">
+                        Date not available
+                    </div>
+                }
+
+            </div>
+
+
+            <!-- Updated -->
+            <div class="col-md-4">
+
+                <div class="text-muted small mb-1">
+                    Last Updated By
+                </div>
+
+                <div class="fw-semibold">
+                    @(string.IsNullOrWhiteSpace(Model.UpdatedBy)
+                        ? "N/A"
+                        : Model.UpdatedBy)
+                </div>
+
+                @if (Model.UpdatedDate.HasValue)
+                {
+                    <div class="small text-muted mt-1">
+                        @Model.UpdatedDate.Value.ToLocalTime().ToString("dd-MMM-yyyy hh:mm tt")
+                    </div>
+                }
+                else
+                {
+                    <div class="small text-muted mt-1">
+                        Never updated
+                    </div>
+                }
+
+            </div>
+
+
+            <!-- Deleted -->
+            <div class="col-md-4">
+
+                <div class="text-muted small mb-1">
+                    Deleted By
+                </div>
+
+                <div class="fw-semibold">
+                    @(string.IsNullOrWhiteSpace(Model.DeletedBy)
+                        ? "N/A"
+                        : Model.DeletedBy)
+                </div>
+
+                @if (Model.DeletedDate.HasValue)
+                {
+                    <div class="small text-muted mt-1">
+                        @Model.DeletedDate.Value.ToLocalTime().ToString("dd-MMM-yyyy hh:mm tt")
+                    </div>
+                }
+                else
+                {
+                    <div class="small text-muted mt-1">
+                        Not deleted
+                    </div>
+                }
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
 </div>

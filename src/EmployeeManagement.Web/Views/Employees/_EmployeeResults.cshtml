@@ -5,15 +5,40 @@
 @model PagedResult<EmployeeListModel>
 
 @{
-    var search = ViewBag.Search as string;
+    ViewData["Title"] = "Employees";
 
-    int? departmentId = ViewBag.DepartmentId;
-    int? positionId = ViewBag.PositionId;
-    int? status = ViewBag.Status;
-    int? employmentType = ViewBag.EmploymentType;
+    var search =
+        ViewBag.Search as string;
 
-    DateTime? hireDateFrom = ViewBag.HireDateFrom;
-    DateTime? hireDateTo = ViewBag.HireDateTo;
+    int? departmentId =
+        ViewBag.DepartmentId is int departmentValue
+            ? departmentValue
+            : null;
+
+    int? positionId =
+        ViewBag.PositionId is int positionValue
+            ? positionValue
+            : null;
+
+    EmployeeStatus? status =
+        ViewBag.Status is EmployeeStatus statusValue
+            ? statusValue
+            : null;
+
+    EmploymentType? employmentType =
+        ViewBag.EmploymentType is EmploymentType employmentTypeValue
+            ? employmentTypeValue
+            : null;
+
+    DateTime? hireDateFrom =
+        ViewBag.HireDateFrom is DateTime fromDate
+            ? fromDate
+            : null;
+
+    DateTime? hireDateTo =
+        ViewBag.HireDateTo is DateTime toDate
+            ? toDate
+            : null;
 
     var sortBy =
         ViewBag.SortBy as string ?? "HireDate";
@@ -21,8 +46,11 @@
     var sortDescending =
         ViewBag.SortDescending is bool value && value;
 
-    var currentPage = Model.PageNumber;
-    var totalPages = Model.TotalPages;
+    var currentPage =
+        Model.PageNumber;
+
+    var totalPages =
+        Model.TotalPages;
 
     var startPage =
         Math.Max(1, currentPage - 2);
@@ -485,6 +513,9 @@
                                     <div class="btn-group btn-group-sm">
 
                                         <!-- View Details -->
+                                      <div class="btn-group"
+                                         role="group">
+
                                         <a asp-action="Details"
                                            asp-route-id="@employee.Id"
                                            class="btn btn-outline-primary"
@@ -495,7 +526,6 @@
                                         </a>
 
 
-                                        <!-- Edit -->
                                         <a asp-action="Edit"
                                            asp-route-id="@employee.Id"
                                            class="btn btn-outline-secondary"
@@ -504,6 +534,19 @@
                                             <i class="bi bi-pencil"></i>
 
                                         </a>
+
+
+                                        <button type="button"
+                                                class="btn btn-outline-danger delete-employee-btn"
+                                                data-id="@employee.Id"
+                                                data-name="@employee.FullName"
+                                                title="Delete Employee">
+
+                                            <i class="bi bi-trash"></i>
+
+                                        </button>
+
+                                    </div>
 
                                     </div>
 

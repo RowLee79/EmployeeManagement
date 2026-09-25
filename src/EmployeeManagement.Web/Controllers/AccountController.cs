@@ -90,4 +90,10 @@ public class AccountController : Controller
             "Login",
             "Account");
     }
+
+    [HttpGet]
+    public IActionResult AccessDenied()
+    {
+        return View();
+    }
 }

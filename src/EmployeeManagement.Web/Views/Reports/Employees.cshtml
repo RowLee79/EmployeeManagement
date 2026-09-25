@@ -1,65 +1,282 @@
-﻿@{
+﻿@using EmployeeManagement.Domain.Enums
+@model EmployeeManagement.Web.Models.Reports.EmployeeReportsViewModel
+
+@{
     ViewData["Title"] = "Employee Reports";
 }
 
 <div class="container-fluid py-4">
 
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <!-- =========================================================
+         PAGE HEADER
+         ========================================================= -->
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
 
         <div>
-            <h2 class="fw-bold mb-1">
-                <i class="bi bi-bar-chart-line me-2"></i>
+            <h2 class="mb-1">
+                <i class="bi bi-file-earmark-bar-graph me-2"></i>
                 Employee Reports
             </h2>
 
             <p class="text-muted mb-0">
-                Generate employee reports and summaries.
+                Generate, preview, print, and export employee reports.
             </p>
+        </div>
+
+        <div class="mt-3 mt-md-0">
+            <a asp-controller="Employees"
+               asp-action="Index"
+               class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-1"></i>
+                Back to Employees
+            </a>
         </div>
 
     </div>
 
 
-    <div class="row g-4">
+    <!-- =========================================================
+         REPORT CONFIGURATION CARD
+         ========================================================= -->
+    <div class="card shadow-sm mb-4">
 
-        <!-- Employee Master List -->
-        <div class="col-md-6 col-xl-4">
+        <div class="card-header bg-white py-3">
+            <h5 class="mb-0">
+                <i class="bi bi-sliders me-2"></i>
+                Report Configuration
+            </h5>
+        </div>
 
-            <div class="card border-0 shadow-sm h-100">
+        <div class="card-body">
 
-                <div class="card-body">
+            <!-- =================================================
+                 REPORT TYPE
+                 ================================================= -->
+            <div class="row mb-4">
 
-                    <div class="mb-3">
+                <div class="col-lg-6">
 
-                        <div class="rounded-circle bg-primary bg-opacity-10
-                            text-primary d-flex align-items-center
-                            justify-content-center"
-                             style="width:50px;height:50px;">
+                    <label for="reportType"
+                           class="form-label fw-semibold">
+                        Report Type
+                    </label>
 
-                            <i class="bi bi-people fs-4"></i>
+                    <select id="reportType"
+                            class="form-select">
 
-                        </div>
+                        <option value="EmployeeMasterList">
+                            Employee Master List
+                        </option>
+
+                        <option value="EmployeeSummary">
+                            Employee Summary
+                        </option>
+
+                        <option value="EmployeesByDepartment">
+                            Employees by Department
+                        </option>
+
+                        <option value="EmployeeStatus">
+                            Employee Status
+                        </option>
+
+                        <option value="NewHires">
+                            New Hires
+                        </option>
+
+                    </select>
+
+                    <div class="form-text">
+                        Select the report you want to generate.
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- =================================================
+                 FILTERS
+                 ================================================= -->
+            <div class="border rounded p-3">
+
+                <div class="d-flex justify-content-between align-items-center mb-3">
+
+                    <h6 class="mb-0 fw-semibold">
+                        <i class="bi bi-funnel me-2"></i>
+                        Employee Filters
+                    </h6>
+
+                    <button type="button"
+                            id="clearFiltersButton"
+                            class="btn btn-sm btn-outline-secondary">
+
+                        <i class="bi bi-x-circle me-1"></i>
+                        Clear Filters
+
+                    </button>
+
+                </div>
+
+
+                <div class="row g-3">
+
+                    <!-- Search -->
+                    <div class="col-lg-4 col-md-6">
+
+                        <label for="reportSearch"
+                               class="form-label">
+                            Search
+                        </label>
+
+                        <input type="text"
+                               id="reportSearch"
+                               class="form-control"
+                               placeholder="Employee number, name, or email..." />
 
                     </div>
 
-                    <h5 class="fw-bold">
-                        Employee Master List
-                    </h5>
 
-                    <p class="text-muted">
-                        Complete list of employees including
-                        department, position, status and employment type.
-                    </p>
+                    <!-- Department -->
+                    <div class="col-lg-4 col-md-6">
 
-                    <a asp-controller="Reports"
-                       asp-action="EmployeeMasterList"
-                       class="btn btn-primary">
+                        <label for="reportDepartmentId"
+                               class="form-label">
+                            Department
+                        </label>
 
-                        <i class="bi bi-file-earmark-text me-1"></i>
+                        <select id="reportDepartmentId"
+                                class="form-select">
 
-                        Generate Report
+                            <option value="">
+                                All Departments
+                            </option>
 
-                    </a>
+                            @foreach (var department in Model.Departments)
+                            {
+                                <option value="@department.Id">
+                                    @department.Name
+                                </option>
+                            }
+
+                        </select>
+
+                    </div>
+
+
+                    <!-- Position -->
+                    <div class="col-lg-4 col-md-6">
+
+                        <label for="reportPositionId"
+                               class="form-label">
+                            Position
+                        </label>
+
+                        <select id="reportPositionId"
+                                class="form-select">
+
+                            <option value="">
+                                All Positions
+                            </option>
+
+                            @foreach (var position in Model.Positions)
+                            {
+                                <option value="@position.Id"
+                                        data-department-id="@position.DepartmentId">
+
+                                    @position.Code -
+                                    @position.Name
+
+                                </option>
+                            }
+
+                        </select>
+
+                    </div>
+
+
+                    <!-- Employment Type -->
+                    <div class="col-lg-4 col-md-6">
+
+                        <label for="reportEmploymentType"
+                               class="form-label">
+                            Employment Type
+                        </label>
+
+                        <select id="reportEmploymentType"
+                                class="form-select">
+
+                            <option value="">
+                                All Employment Types
+                            </option>
+
+                            @foreach (var employmentType in Enum.GetValues<EmploymentType>())
+                            {
+                                <option value="@((int)employmentType)">
+                                    @employmentType
+                                </option>
+                            }
+
+                        </select>
+
+                    </div>
+
+
+                    <!-- Status -->
+                    <div class="col-lg-4 col-md-6">
+
+                        <label for="reportStatus"
+                               class="form-label">
+                            Employee Status
+                        </label>
+
+                        <select id="reportStatus"
+                                class="form-select">
+
+                            <option value="">
+                                All Statuses
+                            </option>
+
+                            @foreach (var status in Enum.GetValues<EmployeeStatus>())
+                            {
+                                <option value="@((int)status)">
+                                    @status
+                                </option>
+                            }
+
+                        </select>
+
+                    </div>
+
+
+                    <!-- Hire Date From -->
+                    <div class="col-lg-4 col-md-6">
+
+                        <label for="reportHireDateFrom"
+                               class="form-label">
+                            Hire Date From
+                        </label>
+
+                        <input type="date"
+                               id="reportHireDateFrom"
+                               class="form-control" />
+
+                    </div>
+
+
+                    <!-- Hire Date To -->
+                    <div class="col-lg-4 col-md-6">
+
+                        <label for="reportHireDateTo"
+                               class="form-label">
+                            Hire Date To
+                        </label>
+
+                        <input type="date"
+                               id="reportHireDateTo"
+                               class="form-control" />
+
+                    </div>
 
                 </div>
 
@@ -67,85 +284,270 @@
 
         </div>
 
+    </div>
 
-        <!-- Department Report -->
-        <div class="col-md-6 col-xl-4">
 
-            <div class="card border-0 shadow-sm h-100">
+    <!-- =========================================================
+         REPORT ACTIONS
+         ========================================================= -->
+    <div class="card shadow-sm mb-4">
 
-                <div class="card-body">
+        <div class="card-header bg-white py-3">
 
-                    <div class="mb-3">
+            <h5 class="mb-0">
+                <i class="bi bi-file-earmark-arrow-down me-2"></i>
+                Report Actions
+            </h5>
 
-                        <div class="rounded-circle bg-success bg-opacity-10
-                            text-success d-flex align-items-center
-                            justify-content-center"
-                             style="width:50px;height:50px;">
+        </div>
 
-                            <i class="bi bi-building fs-4"></i>
+        <div class="card-body">
 
-                        </div>
+            <div class="d-flex flex-wrap gap-2">
 
-                    </div>
+                <!-- =============================================
+                     PREVIEW
+                     ============================================= -->
+                <form asp-controller="Reports"
+                      asp-action="EmployeeMasterListPreview"
+                      method="post"
+                      target="_blank"
+                      class="report-form">
 
-                    <h5 class="fw-bold">
-                        Employees by Department
-                    </h5>
+                    @Html.AntiForgeryToken()
 
-                    <p class="text-muted">
-                        View employees grouped by department.
-                    </p>
+                    <input type="hidden"
+                           name="Search"
+                           class="report-search" />
 
-                    <button class="btn btn-success"
-                            disabled>
+                    <input type="hidden"
+                           name="DepartmentId"
+                           class="report-department-id" />
 
-                        Coming Soon
+                    <input type="hidden"
+                           name="PositionId"
+                           class="report-position-id" />
+
+                    <input type="hidden"
+                           name="EmploymentType"
+                           class="report-employment-type" />
+
+                    <input type="hidden"
+                           name="Status"
+                           class="report-status" />
+
+                    <input type="hidden"
+                           name="HireDateFrom"
+                           class="report-hire-date-from" />
+
+                    <input type="hidden"
+                           name="HireDateTo"
+                           class="report-hire-date-to" />
+
+                    <button type="submit"
+                            class="btn btn-outline-primary">
+
+                        <i class="bi bi-eye me-1"></i>
+                        Preview
 
                     </button>
 
-                </div>
+                </form>
+
+
+                <!-- =============================================
+                     PDF
+                     ============================================= -->
+                <form asp-controller="Reports"
+                      asp-action="EmployeeMasterListPdf"
+                      method="post"
+                      target="_blank"
+                      class="report-form">
+
+                    @Html.AntiForgeryToken()
+
+                    <input type="hidden"
+                           name="Search"
+                           class="report-search" />
+
+                    <input type="hidden"
+                           name="DepartmentId"
+                           class="report-department-id" />
+
+                    <input type="hidden"
+                           name="PositionId"
+                           class="report-position-id" />
+
+                    <input type="hidden"
+                           name="EmploymentType"
+                           class="report-employment-type" />
+
+                    <input type="hidden"
+                           name="Status"
+                           class="report-status" />
+
+                    <input type="hidden"
+                           name="HireDateFrom"
+                           class="report-hire-date-from" />
+
+                    <input type="hidden"
+                           name="HireDateTo"
+                           class="report-hire-date-to" />
+
+                    <button type="submit"
+                            class="btn btn-danger">
+
+                        <i class="bi bi-file-earmark-pdf me-1"></i>
+                        PDF
+
+                    </button>
+
+                </form>
+
+
+                <!-- =============================================
+                     EXCEL
+                     ============================================= -->
+                <form asp-controller="Reports"
+                      asp-action="EmployeeMasterListExcel"
+                      method="post"
+                      class="report-form">
+
+                    @Html.AntiForgeryToken()
+
+                    <input type="hidden"
+                           name="Search"
+                           class="report-search" />
+
+                    <input type="hidden"
+                           name="DepartmentId"
+                           class="report-department-id" />
+
+                    <input type="hidden"
+                           name="PositionId"
+                           class="report-position-id" />
+
+                    <input type="hidden"
+                           name="EmploymentType"
+                           class="report-employment-type" />
+
+                    <input type="hidden"
+                           name="Status"
+                           class="report-status" />
+
+                    <input type="hidden"
+                           name="HireDateFrom"
+                           class="report-hire-date-from" />
+
+                    <input type="hidden"
+                           name="HireDateTo"
+                           class="report-hire-date-to" />
+
+                    <button type="submit"
+                            class="btn btn-success">
+
+                        <i class="bi bi-file-earmark-excel me-1"></i>
+                        Excel
+
+                    </button>
+
+                </form>
+
+
+                <!-- =============================================
+                     PRINT
+                     ============================================= -->
+                <form asp-controller="Reports"
+                      asp-action="EmployeeMasterListPrint"
+                      method="post"
+                      target="_blank"
+                      class="report-form">
+
+                    @Html.AntiForgeryToken()
+
+                    <input type="hidden"
+                           name="Search"
+                           class="report-search" />
+
+                    <input type="hidden"
+                           name="DepartmentId"
+                           class="report-department-id" />
+
+                    <input type="hidden"
+                           name="PositionId"
+                           class="report-position-id" />
+
+                    <input type="hidden"
+                           name="EmploymentType"
+                           class="report-employment-type" />
+
+                    <input type="hidden"
+                           name="Status"
+                           class="report-status" />
+
+                    <input type="hidden"
+                           name="HireDateFrom"
+                           class="report-hire-date-from" />
+
+                    <input type="hidden"
+                           name="HireDateTo"
+                           class="report-hire-date-to" />
+
+                    <button type="submit"
+                            class="btn btn-dark">
+
+                        <i class="bi bi-printer me-1"></i>
+                        Print
+
+                    </button>
+
+                </form>
 
             </div>
 
         </div>
 
+    </div>
 
-        <!-- Status Report -->
-        <div class="col-md-6 col-xl-4">
 
-            <div class="card border-0 shadow-sm h-100">
+    <!-- =========================================================
+         REPORT PREVIEW AREA
+         ========================================================= -->
+    <div class="card shadow-sm">
 
-                <div class="card-body">
+        <div class="card-header bg-white py-3">
 
-                    <div class="mb-3">
+            <div class="d-flex justify-content-between align-items-center">
 
-                        <div class="rounded-circle bg-warning bg-opacity-10
-                            text-warning d-flex align-items-center
-                            justify-content-center"
-                             style="width:50px;height:50px;">
+                <h5 class="mb-0">
+                    <i class="bi bi-file-earmark-text me-2"></i>
+                    Report Preview
+                </h5>
 
-                            <i class="bi bi-person-check fs-4"></i>
+                <span class="badge bg-secondary">
+                    Employee Master List
+                </span>
 
-                        </div>
+            </div>
 
-                    </div>
+        </div>
 
-                    <h5 class="fw-bold">
-                        Employee Status Report
-                    </h5>
+        <div class="card-body">
 
-                    <p class="text-muted">
-                        View employees grouped by employment status.
-                    </p>
+            <div id="reportPreview"
+                 class="text-center py-5 text-muted">
 
-                    <button class="btn btn-warning"
-                            disabled>
+                <i class="bi bi-file-earmark-bar-graph display-4 d-block mb-3"></i>
 
-                        Coming Soon
+                <h5>No report generated</h5>
 
-                    </button>
-
-                </div>
+                <p class="mb-0">
+                    Select your filters and choose
+                    <strong>Preview</strong>,
+                    <strong>PDF</strong>,
+                    <strong>Excel</strong>,
+                    or <strong>Print</strong>.
+                </p>
 
             </div>
 
@@ -154,3 +556,253 @@
     </div>
 
 </div>
+
+
+@section Scripts {
+
+<script>
+
+    document.addEventListener("DOMContentLoaded", function () {
+
+        const reportType =
+            document.getElementById("reportType");
+
+        const search =
+            document.getElementById("reportSearch");
+
+        const department =
+            document.getElementById("reportDepartmentId");
+
+        const position =
+            document.getElementById("reportPositionId");
+
+        const employmentType =
+            document.getElementById("reportEmploymentType");
+
+        const status =
+            document.getElementById("reportStatus");
+
+        const hireDateFrom =
+            document.getElementById("reportHireDateFrom");
+
+        const hireDateTo =
+            document.getElementById("reportHireDateTo");
+
+        const clearFiltersButton =
+            document.getElementById("clearFiltersButton");
+
+        const reportForms =
+            document.querySelectorAll(".report-form");
+
+
+        // =====================================================
+        // DEPARTMENT → POSITION FILTERING
+        // =====================================================
+
+        function filterPositions() {
+
+            const departmentId = department.value;
+
+            Array.from(position.options).forEach(function (option) {
+
+                if (!option.value) {
+
+                    option.hidden = false;
+                    return;
+
+                }
+
+                const optionDepartmentId =
+                    option.getAttribute("data-department-id");
+
+                if (!departmentId ||
+                    optionDepartmentId === departmentId) {
+
+                    option.hidden = false;
+
+                }
+                else {
+
+                    option.hidden = true;
+
+                    if (position.value === option.value) {
+                        position.value = "";
+                    }
+
+                }
+
+            });
+
+        }
+
+
+        // =====================================================
+        // COPY FILTERS TO POST FORMS
+        // =====================================================
+
+        function populateReportForms() {
+
+            reportForms.forEach(function (form) {
+
+                const searchInput =
+                    form.querySelector(".report-search");
+
+                const departmentInput =
+                    form.querySelector(".report-department-id");
+
+                const positionInput =
+                    form.querySelector(".report-position-id");
+
+                const employmentTypeInput =
+                    form.querySelector(".report-employment-type");
+
+                const statusInput =
+                    form.querySelector(".report-status");
+
+                const hireDateFromInput =
+                    form.querySelector(".report-hire-date-from");
+
+                const hireDateToInput =
+                    form.querySelector(".report-hire-date-to");
+
+
+                if (searchInput) {
+                    searchInput.value = search.value;
+                }
+
+                if (departmentInput) {
+                    departmentInput.value = department.value;
+                }
+
+                if (positionInput) {
+                    positionInput.value = position.value;
+                }
+
+                if (employmentTypeInput) {
+                    employmentTypeInput.value =
+                        employmentType.value;
+                }
+
+                if (statusInput) {
+                    statusInput.value = status.value;
+                }
+
+                if (hireDateFromInput) {
+                    hireDateFromInput.value =
+                        hireDateFrom.value;
+                }
+
+                if (hireDateToInput) {
+                    hireDateToInput.value =
+                        hireDateTo.value;
+                }
+
+            });
+
+        }
+
+
+        // =====================================================
+        // CLEAR FILTERS
+        // =====================================================
+
+        clearFiltersButton.addEventListener(
+            "click",
+            function () {
+
+                search.value = "";
+
+                department.value = "";
+
+                position.value = "";
+
+                employmentType.value = "";
+
+                status.value = "";
+
+                hireDateFrom.value = "";
+
+                hireDateTo.value = "";
+
+                filterPositions();
+
+                populateReportForms();
+
+            });
+
+
+        // =====================================================
+        // DEPARTMENT CHANGE
+        // =====================================================
+
+        department.addEventListener(
+            "change",
+            function () {
+
+                filterPositions();
+
+                populateReportForms();
+
+            });
+
+
+        // =====================================================
+        // FILTER CHANGES
+        // =====================================================
+
+        [
+            search,
+            position,
+            employmentType,
+            status,
+            hireDateFrom,
+            hireDateTo
+        ].forEach(function (element) {
+
+            element.addEventListener(
+                "change",
+                populateReportForms);
+
+            element.addEventListener(
+                "input",
+                populateReportForms);
+
+        });
+
+
+        // =====================================================
+        // REPORT TYPE
+        // =====================================================
+
+        reportType.addEventListener(
+            "change",
+            function () {
+
+                const selectedReport =
+                    reportType.value;
+
+                console.log(
+                    "Selected report:",
+                    selectedReport);
+
+                /*
+                 * Future lessons can route different
+                 * report types to different endpoints.
+                 */
+
+            });
+
+
+        // =====================================================
+        // INITIALIZE
+        // =====================================================
+
+        filterPositions();
+
+        populateReportForms();
+
+    });
+
+</script>
+
+}

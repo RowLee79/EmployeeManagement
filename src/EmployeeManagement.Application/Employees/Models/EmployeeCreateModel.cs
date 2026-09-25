@@ -1,63 +1,105 @@
-﻿using EmployeeManagement.Domain.Enums;
-using Microsoft.AspNetCore.Http;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
+using EmployeeManagement.Domain.Common;
+using EmployeeManagement.Domain.Enums;
 
 namespace EmployeeManagement.Application.Employees.Models;
-    public class EmployeeCreateModel
-    {
-        [Required]
-        [StringLength(100)]
-        public string FirstName { get; set; } = null!;
 
-        [StringLength(100)]
-        public string? MiddleName { get; set; }
+public class EmployeeCreateModel : AuditableEntity
+{
+    [Required]
+    [Display(Name = "Employee Number")]
+    [StringLength(50)]
+    public string EmployeeNumber { get; set; } = string.Empty;
 
-        [Required]
-        [StringLength(100)]
-        public string LastName { get; set; } = null!;
 
-        [StringLength(20)]
-        public string? Suffix { get; set; }
+    [Required]
+    [Display(Name = "First Name")]
+    [StringLength(100)]
+    public string FirstName { get; set; } = string.Empty;
 
-        [Required]
-        public DateTime BirthDate { get; set; }
 
-        [Required]
-        public Gender Gender { get; set; }
+    [Display(Name = "Middle Name")]
+    [StringLength(100)]
+    public string? MiddleName { get; set; }
 
-        [StringLength(50)]
-        public string? CivilStatus { get; set; }
 
-        [Required]
-        [EmailAddress]
-        public string Email { get; set; } = null!;
+    [Required]
+    [Display(Name = "Last Name")]
+    [StringLength(100)]
+    public string LastName { get; set; } = string.Empty;
 
-        [Phone]
-        public string? PhoneNumber { get; set; }
 
-        public string? Address { get; set; }
+    [Display(Name = "Suffix")]
+    [StringLength(20)]
+    public string? Suffix { get; set; }
 
-        [Required]
-        public DateTime HireDate { get; set; }
 
-        public DateTime? RegularizationDate { get; set; }
+    [Required]
+    [Display(Name = "Birth Date")]
+    [DataType(DataType.Date)]
+    public DateTime BirthDate { get; set; }
 
-        [Required]
-        public EmploymentType EmploymentType { get; set; }
 
-        [Required]
-        public EmployeeStatus Status { get; set; }
+    [Required]
+    public Gender Gender { get; set; }
 
-        [Range(0, 999999999)]
-        public decimal BasicSalary { get; set; }
 
-        [Required]
-        public int DepartmentId { get; set; }
+    [Required]
+    [Display(Name = "Civil Status")]
+    public CivilStatus CivilStatus { get; set; }
 
-        [Required]
-        public int PositionId { get; set; }
 
-        public IFormFile? ProfileImageFile { get; set; }
+    [EmailAddress]
+    [StringLength(200)]
+    public string? Email { get; set; }
 
-        public string? ProfileImage { get; set; }
-    }
+
+    [Display(Name = "Phone Number")]
+    [StringLength(50)]
+    public string? PhoneNumber { get; set; }
+
+
+    [StringLength(500)]
+    public string? Address { get; set; }
+
+
+    [Required]
+    [Display(Name = "Hire Date")]
+    [DataType(DataType.Date)]
+    public DateTime HireDate { get; set; }
+
+
+    [Display(Name = "Regularization Date")]
+    [DataType(DataType.Date)]
+    public DateTime? RegularizationDate { get; set; }
+
+
+    [Required]
+    [Display(Name = "Employment Type")]
+    public EmploymentType EmploymentType { get; set; }
+
+
+    [Required]
+    public EmployeeStatus Status { get; set; }
+
+
+    [Required]
+    [Range(0, 999999999)]
+    [Display(Name = "Basic Salary")]
+    public decimal BasicSalary { get; set; }
+
+
+    [Required]
+    [Display(Name = "Department")]
+    public int DepartmentId { get; set; }
+
+
+    [Required]
+    [Display(Name = "Position")]
+    public int PositionId { get; set; }
+
+
+    [Display(Name = "Profile Image")]
+    [StringLength(500)]
+    public string? ProfileImage { get; set; }
+}

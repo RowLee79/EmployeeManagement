@@ -1,8 +1,9 @@
 ﻿using EmployeeManagement.Application.Attendance.Interfaces;
 using EmployeeManagement.Application.Attendance.Models;
-using EmployeeManagement.Application.Employees.Interfaces;
 using EmployeeManagement.Domain.Enums;
 using Microsoft.AspNetCore.Authorization;
+using EmployeeManagement.Application.Employees.Interfaces;
+
 using Microsoft.AspNetCore.Mvc;
 
 namespace EmployeeManagement.Web.Controllers;

@@ -1,4 +1,5 @@
 ﻿using EmployeeManagement.Domain.Common;
+using EmployeeManagement.Domain.Entities;
 using EmployeeManagement.Domain.Enums;
 
 namespace EmployeeManagement.Domain.Entities;
@@ -19,7 +20,6 @@ public class Employee : AuditableEntity
 
     public Gender Gender { get; set; }
 
-    //public string? CivilStatus { get; set; }
     public CivilStatus? CivilStatus { get; set; }
     public string Email { get; set; } = null!;
 
@@ -55,4 +55,5 @@ public class Employee : AuditableEntity
 
     public ICollection<Payroll> Payrolls { get; set; }
         = new List<Payroll>();
+
 }

@@ -17,5 +17,7 @@ namespace EmployeeManagement.CrystalReport.Models
         public DateTime? HireDateFrom { get; set; }
 
         public DateTime? HireDateTo { get; set; }
+
+        public string Format { get; set; }
     }
 }

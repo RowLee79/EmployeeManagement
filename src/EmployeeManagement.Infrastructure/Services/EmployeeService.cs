@@ -1,13 +1,12 @@
 ﻿using EmployeeManagement.Application.Common.Interfaces;
 using EmployeeManagement.Application.Common.Models;
-using EmployeeManagement.Application.Employees.Interfaces;
 using EmployeeManagement.Application.Employees.Models;
-using EmployeeManagement.Application.Employees.Reports;
 using EmployeeManagement.Domain.Entities;
 using EmployeeManagement.Domain.Enums;
-using EmployeeManagement.Infrastructure.Persistence;
+using EmployeeManagement.Application.Employees.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using System.Text;
+using EmployeeManagement.Infrastructure.Persistence;
 
 namespace EmployeeManagement.Infrastructure.Services;
 
@@ -417,7 +416,17 @@ public class EmployeeService : IEmployeeService
 
                 PositionId = x.PositionId,
 
-                PositionName = x.Position.Name
+                PositionName = x.Position.Name,
+
+                 // AUDIT
+                CreatedBy = x.CreatedBy,
+                CreatedDate = x.CreatedDate,
+
+                UpdatedBy = x.UpdatedBy,
+                UpdatedDate = x.UpdatedDate,
+
+                DeletedBy = x.DeletedBy,
+                DeletedDate = x.DeletedDate
             })
             .FirstOrDefaultAsync();
     }
@@ -426,139 +435,67 @@ public class EmployeeService : IEmployeeService
     // CREATE
     // =========================================================
 
-    public async Task<int> CreateAsync(
-        EmployeeCreateModel model)
+    public async Task<int> CreateAsync(EmployeeCreateModel model)
     {
-        // -----------------------------------------------------
-        // Validate Department
-        // -----------------------------------------------------
-
-        var departmentExists =
-            await _context.Departments.AnyAsync(x =>
-                x.Id == model.DepartmentId &&
-                !x.IsDeleted &&
-                x.IsActive);
-
-        if (!departmentExists)
-        {
-            throw new InvalidOperationException(
-                "Selected department does not exist or is inactive.");
-        }
-
-        // -----------------------------------------------------
-        // Validate Position
-        // -----------------------------------------------------
-
-        var positionExists =
-            await _context.Positions.AnyAsync(x =>
-                x.Id == model.PositionId &&
-                !x.IsDeleted &&
-                x.IsActive &&
-                x.DepartmentId == model.DepartmentId);
-
-        if (!positionExists)
-        {
-            throw new InvalidOperationException(
-                "Selected position does not exist, is inactive, " +
-                "or does not belong to the selected department.");
-        }
-
-        // -----------------------------------------------------
-        // Validate Email
-        // -----------------------------------------------------
-
-        var email = model.Email.Trim();
-
-        var emailExists =
-            await _context.Employees.AnyAsync(x =>
-                !x.IsDeleted &&
-                x.Email == email);
-
-        if (emailExists)
-        {
-            throw new InvalidOperationException(
-                "Email address already exists.");
-        }
-
-        // -----------------------------------------------------
-        // Generate Employee Number
-        // -----------------------------------------------------
-
-        var employeeNumber =
-            await GenerateEmployeeNumberAsync();
-
-        // -----------------------------------------------------
-        // Create Employee
-        // -----------------------------------------------------
+        var now = DateTime.UtcNow;
 
         var employee = new Employee
         {
-            EmployeeNumber = employeeNumber,
+            EmployeeNumber = model.EmployeeNumber.Trim(),
 
             FirstName = model.FirstName.Trim(),
 
-            MiddleName =
-                string.IsNullOrWhiteSpace(model.MiddleName)
-                    ? null
-                    : model.MiddleName.Trim(),
+            MiddleName = string.IsNullOrWhiteSpace(model.MiddleName)
+                ? null
+                : model.MiddleName.Trim(),
 
             LastName = model.LastName.Trim(),
 
-            Suffix =
-                string.IsNullOrWhiteSpace(model.Suffix)
-                    ? null
-                    : model.Suffix.Trim(),
+            Suffix = string.IsNullOrWhiteSpace(model.Suffix)
+                ? null
+                : model.Suffix.Trim(),
 
             BirthDate = model.BirthDate,
 
             Gender = model.Gender,
 
-            CivilStatus =
-                string.IsNullOrWhiteSpace(model.CivilStatus)
-                    ? null
-                    : Enum.Parse<CivilStatus>(model.CivilStatus.Trim()),
+            CivilStatus = model.CivilStatus,
 
-            Email = email,
+            Email = string.IsNullOrWhiteSpace(model.Email)
+                ? null
+                : model.Email.Trim(),
 
-            PhoneNumber =
-                string.IsNullOrWhiteSpace(model.PhoneNumber)
-                    ? null
-                    : model.PhoneNumber.Trim(),
+            PhoneNumber = string.IsNullOrWhiteSpace(model.PhoneNumber)
+                ? null
+                : model.PhoneNumber.Trim(),
 
-            Address =
-                string.IsNullOrWhiteSpace(model.Address)
-                    ? null
-                    : model.Address.Trim(),
-
-            ProfileImage = model.ProfileImage,
+            Address = string.IsNullOrWhiteSpace(model.Address)
+                ? null
+                : model.Address.Trim(),
 
             HireDate = model.HireDate,
 
-            RegularizationDate =
-                model.RegularizationDate,
+            RegularizationDate = model.RegularizationDate,
 
-            EmploymentType =
-                model.EmploymentType,
+            EmploymentType = model.EmploymentType,
 
-            Status =
-                model.Status,
+            Status = model.Status,
 
-            BasicSalary =
-                model.BasicSalary,
+            BasicSalary = model.BasicSalary,
 
-            DepartmentId =
-                model.DepartmentId,
+            DepartmentId = model.DepartmentId,
 
-            PositionId =
-                model.PositionId,
+            PositionId = model.PositionId,
 
-            CreatedDate =
-                DateTime.UtcNow,
+            ProfileImage = model.ProfileImage,
 
-            CreatedBy =
-                _currentUserService.Email ?? "System",
+            IsDeleted = false,
 
-            IsDeleted = false
+                // AUDIT
+            CreatedBy = _currentUserService.UserName ?? "system",
+            CreatedDate = now
+
+
         };
 
         _context.Employees.Add(employee);
@@ -573,11 +510,11 @@ public class EmployeeService : IEmployeeService
     // =========================================================
 
     public async Task<bool> UpdateAsync(
-        int id,
-        EmployeeEditModel model)
+     int id,
+     EmployeeEditModel model)
     {
-        var employee =
-            await _context.Employees.FirstOrDefaultAsync(x =>
+        var employee = await _context.Employees
+            .FirstOrDefaultAsync(x =>
                 x.Id == id &&
                 !x.IsDeleted);
 
@@ -586,94 +523,32 @@ public class EmployeeService : IEmployeeService
             return false;
         }
 
-        // -----------------------------------------------------
-        // Validate Department
-        // -----------------------------------------------------
+        employee.EmployeeNumber = model.EmployeeNumber.Trim();
 
-        var departmentExists =
-            await _context.Departments.AnyAsync(x =>
-                x.Id == model.DepartmentId &&
-                !x.IsDeleted &&
-                x.IsActive);
-
-        if (!departmentExists)
-        {
-            throw new InvalidOperationException(
-                "Selected department does not exist or is inactive.");
-        }
-
-        // -----------------------------------------------------
-        // Validate Position
-        // -----------------------------------------------------
-
-        var positionExists =
-            await _context.Positions.AnyAsync(x =>
-                x.Id == model.PositionId &&
-                !x.IsDeleted &&
-                x.IsActive &&
-                x.DepartmentId == model.DepartmentId);
-
-        if (!positionExists)
-        {
-            throw new InvalidOperationException(
-                "Selected position does not exist, is inactive, " +
-                "or does not belong to the selected department.");
-        }
-
-        // -----------------------------------------------------
-        // Validate Email
-        // -----------------------------------------------------
-
-        var email = model.Email.Trim();
-
-        var duplicateEmail =
-            await _context.Employees.AnyAsync(x =>
-                x.Id != id &&
-                !x.IsDeleted &&
-                x.Email == email);
-
-        if (duplicateEmail)
-        {
-            throw new InvalidOperationException(
-                "Email address already exists.");
-        }
-
-        // -----------------------------------------------------
-        // Update Employee
-        // -----------------------------------------------------
-
-        employee.EmployeeNumber =
-            model.EmployeeNumber.Trim();
-
-        employee.FirstName =
-            model.FirstName.Trim();
+        employee.FirstName = model.FirstName.Trim();
 
         employee.MiddleName =
             string.IsNullOrWhiteSpace(model.MiddleName)
                 ? null
                 : model.MiddleName.Trim();
 
-        employee.LastName =
-            model.LastName.Trim();
+        employee.LastName = model.LastName.Trim();
 
         employee.Suffix =
             string.IsNullOrWhiteSpace(model.Suffix)
                 ? null
                 : model.Suffix.Trim();
 
-        employee.BirthDate =
-            model.BirthDate;
+        employee.BirthDate = model.BirthDate;
 
-        employee.Gender =
-            model.Gender;
+        employee.Gender = model.Gender;
 
-        employee.CivilStatus =
-            string.IsNullOrWhiteSpace(model.CivilStatus)
-                ? null
-                : Enum.Parse<CivilStatus>(model.CivilStatus.Trim());
+        employee.CivilStatus = model.CivilStatus;
 
         employee.Email =
-            email;
+            string.IsNullOrWhiteSpace(model.Email)
+                ? null
+                : model.Email.Trim();
 
         employee.PhoneNumber =
             string.IsNullOrWhiteSpace(model.PhoneNumber)
@@ -685,18 +560,7 @@ public class EmployeeService : IEmployeeService
                 ? null
                 : model.Address.Trim();
 
-        // -----------------------------------------------------
-        // Profile Image
-        // -----------------------------------------------------
-
-        if (!string.IsNullOrWhiteSpace(model.ProfileImage))
-        {
-            employee.ProfileImage =
-                model.ProfileImage;
-        }
-
-        employee.HireDate =
-            model.HireDate;
+        employee.HireDate = model.HireDate;
 
         employee.RegularizationDate =
             model.RegularizationDate;
@@ -716,49 +580,21 @@ public class EmployeeService : IEmployeeService
         employee.PositionId =
             model.PositionId;
 
-        // -----------------------------------------------------
-        // Audit
-        // -----------------------------------------------------
+        employee.ProfileImage =
+            model.ProfileImage;
+
+        // AUDIT
+        employee.UpdatedBy =
+            _currentUserService.UserName ?? "system";
 
         employee.UpdatedDate =
             DateTime.UtcNow;
-
-        employee.UpdatedBy =
-            _currentUserService.Email ?? "System";
 
         await _context.SaveChangesAsync();
 
         return true;
     }
 
-    // =========================================================
-    // DELETE - SOFT DELETE
-    // =========================================================
-
-    public async Task<bool> DeleteAsync(int id)
-    {
-        var employee =
-            await _context.Employees.FirstOrDefaultAsync(x =>
-                x.Id == id &&
-                !x.IsDeleted);
-
-        if (employee == null)
-        {
-            return false;
-        }
-
-        employee.IsDeleted = true;
-
-        employee.UpdatedDate =
-            DateTime.UtcNow;
-
-        employee.UpdatedBy =
-            _currentUserService.Email ?? "System";
-
-        await _context.SaveChangesAsync();
-
-        return true;
-    }
 
     // =========================================================
     // GENERATE EMPLOYEE NUMBER
@@ -947,13 +783,69 @@ public class EmployeeService : IEmployeeService
     }
 
     public async Task<IReadOnlyList<EmployeeReportModel>>
-    GetEmployeeReportAsync(
-        EmployeeSearchModel searchModel)
+      GetEmployeeReportAsync(
+          EmployeeSearchModel searchModel)
     {
-        var query = BuildEmployeeQuery(searchModel);
+        var query = _context.Employees
+            .AsNoTracking()
+            .Where(x => !x.IsDeleted);
+
+        if (!string.IsNullOrWhiteSpace(searchModel.Search))
+        {
+            var search = searchModel.Search.Trim();
+
+            query = query.Where(x =>
+                x.EmployeeNumber.Contains(search) ||
+                x.FirstName.Contains(search) ||
+                x.LastName.Contains(search) ||
+                x.Email.Contains(search));
+        }
+
+        if (searchModel.DepartmentId.HasValue)
+        {
+            query = query.Where(x =>
+                x.DepartmentId == searchModel.DepartmentId.Value);
+        }
+
+        if (searchModel.PositionId.HasValue)
+        {
+            query = query.Where(x =>
+                x.PositionId == searchModel.PositionId.Value);
+        }
+
+        if (searchModel.EmploymentType.HasValue)
+        {
+            query = query.Where(x =>
+                x.EmploymentType ==
+                searchModel.EmploymentType.Value);
+        }
+
+        if (searchModel.Status.HasValue)
+        {
+            query = query.Where(x =>
+                x.Status ==
+                searchModel.Status.Value);
+        }
+
+        if (searchModel.HireDateFrom.HasValue)
+        {
+            query = query.Where(x =>
+                x.HireDate >=
+                searchModel.HireDateFrom.Value);
+        }
+
+        if (searchModel.HireDateTo.HasValue)
+        {
+            var endDate =
+                searchModel.HireDateTo.Value.Date.AddDays(1);
+
+            query = query.Where(x =>
+                x.HireDate < endDate);
+        }
 
         return await query
-            .OrderBy(x => x.LastName)
+            .OrderBy(x => x.Department.Name)
+            .ThenBy(x => x.LastName)
             .ThenBy(x => x.FirstName)
             .Select(x => new EmployeeReportModel
             {
@@ -962,21 +854,8 @@ public class EmployeeService : IEmployeeService
                 EmployeeNumber =
                     x.EmployeeNumber,
 
-                FullName =
-                    x.FirstName +
-                    " " +
-                    (string.IsNullOrWhiteSpace(x.MiddleName)
-                        ? ""
-                        : x.MiddleName + " ") +
-                    x.LastName +
-                    (string.IsNullOrWhiteSpace(x.Suffix)
-                        ? ""
-                        : " " + x.Suffix),
-
-                Email = x.Email,
-
-                PhoneNumber =
-                    x.PhoneNumber,
+                EmployeeName =
+                    x.FirstName + " " + x.LastName,
 
                 DepartmentName =
                     x.Department.Name,
@@ -990,18 +869,180 @@ public class EmployeeService : IEmployeeService
                 Status =
                     x.Status.ToString(),
 
-                BasicSalary =
-                    x.BasicSalary,
-
                 HireDate =
                     x.HireDate,
 
-                RegularizationDate =
-                    x.RegularizationDate,
-
-                ProfileImage =
-                    x.ProfileImage
+                BasicSalary =
+                    x.BasicSalary
             })
             .ToListAsync();
     }
+    // =========================================================
+    // DELETE - SOFT DELETE
+    // =========================================================
+
+
+    public async Task<bool> DeleteAsync(int id)
+    {
+        var employee = await _context.Employees
+            .FirstOrDefaultAsync(x =>
+                x.Id == id &&
+                !x.IsDeleted);
+
+        if (employee == null)
+        {
+            return false;
+        }
+
+        employee.IsDeleted = true;
+
+        employee.DeletedBy =
+            _currentUserService.UserName ?? "system";
+
+        employee.DeletedDate =
+            DateTime.UtcNow;
+
+        await _context.SaveChangesAsync();
+
+        return true;
+    }
+
+    public async Task<IReadOnlyList<EmployeeListModel>> GetDeletedAsync()
+    {
+        return await _context.Employees
+            .AsNoTracking()
+            .Where(x => x.IsDeleted)
+            .OrderByDescending(x => x.HireDate)
+            .Select(x => new EmployeeListModel
+            {
+                Id = x.Id,
+                EmployeeNumber = x.EmployeeNumber,
+                FirstName = x.FirstName,
+                MiddleName = x.MiddleName,
+                LastName = x.LastName,
+
+                Email = x.Email,
+                PhoneNumber = x.PhoneNumber,
+
+                HireDate = x.HireDate,
+
+                Gender = x.Gender,
+                EmploymentType = x.EmploymentType,
+                Status = x.Status,
+
+                BasicSalary = x.BasicSalary,
+
+                DepartmentId = x.DepartmentId,
+                DepartmentName = x.Department.Name,
+
+                PositionId = x.PositionId,
+                PositionName = x.Position.Name,
+
+                ProfileImage = x.ProfileImage
+            })
+            .ToListAsync();
+    }
+
+    public async Task<bool> RestoreAsync(int id)
+    {
+        var employee = await _context.Employees
+            .FirstOrDefaultAsync(x =>
+                x.Id == id &&
+                x.IsDeleted);
+
+        if (employee == null)
+        {
+            return false;
+        }
+
+        employee.IsDeleted = false;
+
+        // Clear deletion audit information
+        employee.DeletedBy = null;
+        employee.DeletedDate = null;
+
+        // Track the restore as an update
+        employee.UpdatedBy =
+            _currentUserService.UserName ?? "system";
+
+        employee.UpdatedDate =
+            DateTime.UtcNow;
+
+        await _context.SaveChangesAsync();
+
+        return true;
+    }
+
+    public async Task<EmployeeDetailsModel?> GetDeletedByIdAsync(int id)
+    {
+        return await _context.Employees
+            .AsNoTracking()
+            .Where(x => x.Id == id && x.IsDeleted)
+            .Select(x => new EmployeeDetailsModel
+            {
+                Id = x.Id,
+                EmployeeNumber = x.EmployeeNumber,
+
+                FirstName = x.FirstName,
+                MiddleName = x.MiddleName,
+                LastName = x.LastName,
+                Suffix = x.Suffix,
+
+                BirthDate = x.BirthDate,
+                Gender = x.Gender,
+
+                // FIX
+                CivilStatus = x.CivilStatus ?? CivilStatus.Single,
+
+                Email = x.Email,
+                PhoneNumber = x.PhoneNumber,
+                Address = x.Address,
+
+                ProfileImage = x.ProfileImage,
+
+                HireDate = x.HireDate,
+                RegularizationDate = x.RegularizationDate,
+
+                EmploymentType = x.EmploymentType,
+                Status = x.Status,
+
+                BasicSalary = x.BasicSalary,
+
+                DepartmentId = x.DepartmentId,
+                DepartmentName = x.Department.Name,
+
+                PositionId = x.PositionId,
+                PositionName = x.Position.Name,
+
+                // AUDIT
+                CreatedBy = x.CreatedBy,
+                CreatedDate = x.CreatedDate,
+
+                UpdatedBy = x.UpdatedBy,
+                UpdatedDate = x.UpdatedDate,
+
+                DeletedBy = x.DeletedBy,
+                DeletedDate = x.DeletedDate
+            })
+            .FirstOrDefaultAsync();
+    }
+    public async Task<bool> PermanentlyDeleteAsync(int id)
+    {
+        var employee = await _context.Employees
+            .FirstOrDefaultAsync(x =>
+                x.Id == id &&
+                x.IsDeleted);
+
+        if (employee == null)
+        {
+            return false;
+        }
+
+        _context.Employees.Remove(employee);
+
+        await _context.SaveChangesAsync();
+
+        return true;
+    }
+
 }

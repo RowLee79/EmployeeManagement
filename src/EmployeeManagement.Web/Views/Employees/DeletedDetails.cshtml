@@ -1,0 +1,388 @@
+﻿@model EmployeeManagement.Application.Employees.Models.EmployeeDetailsModel
+
+@{
+    ViewData["Title"] = "Deleted Employee Details";
+
+    var profileImage = string.IsNullOrWhiteSpace(Model.ProfileImage)
+        ? Url.Content("~/images/default-avatar.png")
+        : Model.ProfileImage;
+}
+
+<div class="container-fluid">
+
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+
+        <div>
+            <h2 class="fw-bold mb-1">
+                Deleted Employee Details
+            </h2>
+
+            <p class="text-muted mb-0">
+                View information for a deleted employee.
+            </p>
+        </div>
+
+        <div class="d-flex gap-2">
+
+            <a asp-action="Deleted"
+               class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left"></i>
+                Back to Recycle Bin
+            </a>
+
+        </div>
+
+    </div>
+
+    <!-- Warning -->
+    <div class="alert alert-warning d-flex align-items-center gap-2">
+        <i class="bi bi-exclamation-triangle-fill"></i>
+
+        <div>
+            <strong>Deleted Employee</strong>
+            <div class="small">
+                This employee is currently in the recycle bin.
+            </div>
+        </div>
+    </div>
+
+    <!-- Employee Card -->
+    <div class="card shadow-sm border-0">
+
+        <div class="card-body">
+
+            <div class="row">
+
+                <!-- Profile -->
+                <div class="col-lg-3 text-center mb-4">
+
+                    <img src="@profileImage"
+                         alt="@Model.FullName"
+                         class="rounded-circle border shadow-sm"
+                         style="width:160px;height:160px;object-fit:cover;" />
+
+                    <h4 class="fw-bold mt-3 mb-1">
+                        @Model.FullName
+                    </h4>
+
+                    <div class="text-muted">
+                        @Model.EmployeeNumber
+                    </div>
+
+                </div>
+
+                <!-- Information -->
+                <div class="col-lg-9">
+
+                    <h5 class="fw-bold border-bottom pb-2 mb-3">
+                        Personal Information
+                    </h5>
+
+                    <div class="row g-3">
+
+                        <div class="col-md-6">
+                            <label class="text-muted small">
+                                First Name
+                            </label>
+                            <div class="fw-semibold">
+                                @Model.FirstName
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="text-muted small">
+                                Last Name
+                            </label>
+                            <div class="fw-semibold">
+                                @Model.LastName
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="text-muted small">
+                                Birth Date
+                            </label>
+                            <div class="fw-semibold">
+                                @Model.BirthDate.ToString("dd-MMM-yyyy")
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="text-muted small">
+                                Gender
+                            </label>
+                            <div class="fw-semibold">
+                                @Model.Gender
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="text-muted small">
+                                Civil Status
+                            </label>
+                            <div class="fw-semibold">
+                                @Model.CivilStatus
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <h5 class="fw-bold border-bottom pb-2 mt-4 mb-3">
+                        Contact Information
+                    </h5>
+
+                    <div class="row g-3">
+
+                        <div class="col-md-6">
+
+                            <label class="text-muted small">
+                                Email
+                            </label>
+
+                            <div class="fw-semibold">
+                                @(string.IsNullOrWhiteSpace(Model.Email)
+                                    ? "N/A"
+                                    : Model.Email)
+                            </div>
+
+                        </div>
+
+                        <div class="col-md-6">
+
+                            <label class="text-muted small">
+                                Phone Number
+                            </label>
+
+                            <div class="fw-semibold">
+                                @(string.IsNullOrWhiteSpace(Model.PhoneNumber)
+                                    ? "N/A"
+                                    : Model.PhoneNumber)
+                            </div>
+
+                        </div>
+
+                        <div class="col-12">
+
+                            <label class="text-muted small">
+                                Address
+                            </label>
+
+                            <div class="fw-semibold">
+                                @(string.IsNullOrWhiteSpace(Model.Address)
+                                    ? "N/A"
+                                    : Model.Address)
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    <h5 class="fw-bold border-bottom pb-2 mt-4 mb-3">
+                        Employment Information
+                    </h5>
+
+                    <div class="row g-3">
+
+                        <div class="col-md-6">
+
+                            <label class="text-muted small">
+                                Department
+                            </label>
+
+                            <div class="fw-semibold">
+                                @Model.DepartmentName
+                            </div>
+
+                        </div>
+
+                        <div class="col-md-6">
+
+                            <label class="text-muted small">
+                                Position
+                            </label>
+
+                            <div class="fw-semibold">
+                                @Model.PositionName
+                            </div>
+
+                        </div>
+
+                        <div class="col-md-6">
+
+                            <label class="text-muted small">
+                                Hire Date
+                            </label>
+
+                            <div class="fw-semibold">
+                                @Model.HireDate.ToString("dd-MMM-yyyy")
+                            </div>
+
+                        </div>
+
+                        <div class="col-md-6">
+
+                            <label class="text-muted small">
+                                Regularization Date
+                            </label>
+
+                            <div class="fw-semibold">
+
+                                @if (Model.RegularizationDate.HasValue)
+                                {
+                                    @Model.RegularizationDate.Value.ToString("dd-MMM-yyyy")
+                                }
+                                else
+                                {
+                                    <span>N/A</span>
+                                }
+
+                            </div>
+
+                        </div>
+
+                        <div class="col-md-6">
+
+                            <label class="text-muted small">
+                                Employment Type
+                            </label>
+
+                            <div class="fw-semibold">
+                                @Model.EmploymentType
+                            </div>
+
+                        </div>
+
+                        <div class="col-md-6">
+
+                            <label class="text-muted small">
+                                Status
+                            </label>
+
+                            <div class="fw-semibold">
+                                @Model.Status
+                            </div>
+
+                        </div>
+
+                        <div class="col-md-6">
+
+                            <label class="text-muted small">
+                                Basic Salary
+                            </label>
+
+                            <div class="fw-semibold">
+                                @Model.BasicSalary.ToString("N2")
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- Audit Information -->
+    <div class="card border-0 shadow-sm mt-4">
+
+        <div class="card-header bg-white">
+
+            <h5 class="mb-0 fw-bold">
+                <i class="bi bi-clock-history"></i>
+                Audit Information
+            </h5>
+
+        </div>
+
+        <div class="card-body">
+
+            <div class="row g-4">
+
+                <div class="col-md-4">
+
+                    <div class="text-muted small mb-1">
+                        Created By
+                    </div>
+
+                    <div class="fw-semibold">
+                        @(string.IsNullOrWhiteSpace(Model.CreatedBy)
+                            ? "N/A"
+                            : Model.CreatedBy)
+                    </div>
+
+                    <div class="small text-muted mt-1">
+                        @Model.CreatedDate.ToLocalTime().ToString("dd-MMM-yyyy hh:mm tt")
+                    </div>
+
+                </div>
+
+
+                <div class="col-md-4">
+
+                    <div class="text-muted small mb-1">
+                        Updated By
+                    </div>
+
+                    <div class="fw-semibold">
+                        @(string.IsNullOrWhiteSpace(Model.UpdatedBy)
+                            ? "N/A"
+                            : Model.UpdatedBy)
+                    </div>
+
+                    @if (Model.UpdatedDate.HasValue)
+                    {
+                        <div class="small text-muted mt-1">
+                            @Model.UpdatedDate.Value.ToLocalTime().ToString("dd-MMM-yyyy hh:mm tt")
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="small text-muted">
+                            Never updated
+                        </div>
+                    }
+
+                </div>
+
+
+                <div class="col-md-4">
+
+                    <div class="text-muted small mb-1">
+                        Deleted By
+                    </div>
+
+                    <div class="fw-semibold text-danger">
+
+                        @(string.IsNullOrWhiteSpace(Model.DeletedBy)
+                            ? "N/A"
+                            : Model.DeletedBy)
+
+                    </div>
+
+                    @if (Model.DeletedDate.HasValue)
+                    {
+                        <div class="small text-muted mt-1">
+                            @Model.DeletedDate.Value.ToLocalTime().ToString("dd-MMM-yyyy hh:mm tt")
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="small text-muted">
+                            Not deleted
+                        </div>
+                    }
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+</div>

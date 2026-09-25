@@ -1,28 +1,44 @@
 using EmployeeManagement.Application.Attendance.Interfaces;
 using EmployeeManagement.Application.Common.Interfaces;
-using EmployeeManagement.Application.Positions.Interfaces;
 using EmployeeManagement.Application.Dashboard.Interfaces;
 using EmployeeManagement.Application.Departments.Interfaces;
 using EmployeeManagement.Application.Employees.Interfaces;
 using EmployeeManagement.Application.LeaveManagement.Interfaces;
+using EmployeeManagement.Application.Positions.Interfaces;
 using EmployeeManagement.Application.Reporting;
 using EmployeeManagement.Application.Users.Interfaces;
 using EmployeeManagement.Infrastructure.Identity;
 using EmployeeManagement.Infrastructure.Persistence;
 using EmployeeManagement.Infrastructure.Services;
+using EmployeeManagement.Web.Logging;
 using EmployeeManagement.Web.Services;
+using EmployeeManagement.Web.Services.Reporting;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
 
+
+Log.Logger = new LoggerConfiguration()
+    .ReadFrom.Configuration(builder.Configuration)
+    .Enrich.FromLogContext()
+    .WriteTo.Console()
+    .WriteTo.File(
+        "logs/employee-management-.log",
+        rollingInterval: RollingInterval.Day,
+        retainedFileCountLimit: 30)
+    .CreateLogger();
+
+builder.Host.UseSerilog();
 // ============================================================
 // MVC
 // ============================================================
 
 builder.Services.AddControllersWithViews();
 builder.Services.AddHttpContextAccessor();
-
+builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+builder.Services.AddProblemDetails();
 // ============================================================
 // Database
 // ============================================================
@@ -79,7 +95,71 @@ builder.Services
     })
     .AddEntityFrameworkStores<ApplicationIdentityDbContext>()
     .AddDefaultTokenProviders();
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy(
+        "CanViewEmployees",
+        policy =>
+        {
+            policy.RequireRole(
+                "Administrator",
+                "HR Manager",
+                "Manager");
+        });
 
+    options.AddPolicy(
+        "CanManageEmployees",
+        policy =>
+        {
+            policy.RequireRole(
+                "Administrator",
+                "HR Manager");
+        });
+
+    options.AddPolicy(
+        "CanManageDepartments",
+        policy =>
+        {
+            policy.RequireRole(
+                "Administrator",
+                "HR Manager");
+        });
+
+    options.AddPolicy(
+        "CanManagePositions",
+        policy =>
+        {
+            policy.RequireRole(
+                "Administrator",
+                "HR Manager");
+        });
+
+    options.AddPolicy(
+        "CanManageUsers",
+        policy =>
+        {
+            policy.RequireRole(
+                "Administrator");
+        });
+
+    options.AddPolicy(
+        "CanViewReports",
+        policy =>
+        {
+            policy.RequireRole(
+                "Administrator",
+                "HR Manager",
+                "Manager");
+        });
+
+    options.AddPolicy(
+        "CanPermanentlyDeleteEmployees",
+        policy =>
+        {
+            policy.RequireRole(
+                "Administrator");
+        });
+});
 
 // ============================================================
 // Authentication Cookie
@@ -114,6 +194,7 @@ builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
 
 builder.Services.AddScoped<IDashboardService, DashboardService>();
+builder.Services.AddScoped<IDateTimeService, DateTimeService>();
 
 // ============================================================
 // File Storage
@@ -131,13 +212,17 @@ builder.Services.AddScoped<
 var app = builder.Build();
 
 
+app.UseMiddleware<CorrelationIdMiddleware>();
+
+app.UseExceptionHandler();
+
 // ============================================================
 // Middleware
 // ============================================================
 
 if (!app.Environment.IsDevelopment())
 {
-    app.UseExceptionHandler("/Home/Error");
+    //  app.UseExceptionHandler("/Home/Error");
 
     app.UseHsts();
 }
