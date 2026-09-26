@@ -1,0 +1,521 @@
+﻿@using EmployeeManagement.Application.Payroll.Models
+
+@model EmployeeManagement.Application.Payroll.Models.PayrollCreateModel
+
+@{
+    ViewData["Title"] = "Edit Payroll";
+
+    var employees =
+        ViewBag.Employees as
+        IReadOnlyList<PayrollEmployeeLookup>
+        ?? [];
+}
+
+<div class="container-fluid">
+
+    <!-- ===================================================== -->
+    <!-- PAGE HEADER -->
+    <!-- ===================================================== -->
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+
+        <div>
+            <h1 class="h3 mb-1">
+                Edit Payroll
+            </h1>
+
+            <p class="text-muted mb-0">
+                Update the payroll information.
+            </p>
+        </div>
+
+        <div>
+            <a asp-action="Index"
+               class="btn btn-outline-secondary">
+
+                <i class="bi bi-arrow-left"></i>
+                Back to Payroll
+
+            </a>
+        </div>
+
+    </div>
+
+
+    <!-- ===================================================== -->
+    <!-- PAYROLL FORM -->
+    <!-- ===================================================== -->
+
+    <form asp-action="Edit"
+          method="post">
+
+        @Html.AntiForgeryToken()
+
+        <div asp-validation-summary="ModelOnly"
+             class="alert alert-danger">
+        </div>
+
+
+        <div class="card shadow-sm">
+
+            <!-- ================================================= -->
+            <!-- CARD HEADER -->
+            <!-- ================================================= -->
+
+            <div class="card-header bg-white">
+
+                <h5 class="mb-0">
+                    Payroll Information
+                </h5>
+
+            </div>
+
+
+            <!-- ================================================= -->
+            <!-- CARD BODY -->
+            <!-- ================================================= -->
+
+            <div class="card-body">
+
+                <div class="row g-3">
+
+
+                    <!-- ========================================= -->
+                    <!-- EMPLOYEE -->
+                    <!-- ========================================= -->
+
+                    <div class="col-md-6">
+
+                        <label asp-for="EmployeeId"
+                               class="form-label">
+
+                            Employee
+
+                        </label>
+
+                        <select asp-for="EmployeeId"
+                                id="EmployeeId"
+                                class="form-select">
+
+                            <option value="">
+                                Select employee
+                            </option>
+
+                            @foreach (var employee in employees)
+                            {
+                                <option value="@employee.Id"
+                                        data-basic-salary="@employee.BasicSalary">
+
+                                    @employee.EmployeeNumber -
+                                    @employee.EmployeeName
+
+                                </option>
+                            }
+
+                        </select>
+
+                        <span asp-validation-for="EmployeeId"
+                              class="text-danger">
+                        </span>
+
+                    </div>
+
+
+                    <!-- ========================================= -->
+                    <!-- PAYROLL DATE -->
+                    <!-- ========================================= -->
+
+                    <div class="col-md-6">
+
+                        <label asp-for="PayrollDate"
+                               class="form-label">
+
+                            Payroll Date
+
+                        </label>
+
+                        <input asp-for="PayrollDate"
+                               type="date"
+                               class="form-control" />
+
+                        <span asp-validation-for="PayrollDate"
+                              class="text-danger">
+                        </span>
+
+                    </div>
+
+
+                    <!-- ========================================= -->
+                    <!-- BASIC SALARY -->
+                    <!-- ========================================= -->
+
+                    <div class="col-md-6">
+
+                        <label asp-for="BasicSalary"
+                               class="form-label">
+
+                            Basic Salary
+
+                        </label>
+
+                        <input asp-for="BasicSalary"
+                               id="BasicSalary"
+                               type="number"
+                               step="0.01"
+                               min="0"
+                               class="form-control" />
+
+                        <span asp-validation-for="BasicSalary"
+                              class="text-danger">
+                        </span>
+
+                    </div>
+
+
+                    <!-- ========================================= -->
+                    <!-- OVERTIME -->
+                    <!-- ========================================= -->
+
+                    <div class="col-md-6">
+
+                        <label asp-for="Overtime"
+                               class="form-label">
+
+                            Overtime
+
+                        </label>
+
+                        <input asp-for="Overtime"
+                               id="Overtime"
+                               type="number"
+                               step="0.01"
+                               min="0"
+                               class="form-control" />
+
+                        <span asp-validation-for="Overtime"
+                              class="text-danger">
+                        </span>
+
+                    </div>
+
+
+                    <!-- ========================================= -->
+                    <!-- ALLOWANCES -->
+                    <!-- ========================================= -->
+
+                    <div class="col-md-6">
+
+                        <label asp-for="Allowances"
+                               class="form-label">
+
+                            Allowances
+
+                        </label>
+
+                        <input asp-for="Allowances"
+                               id="Allowances"
+                               type="number"
+                               step="0.01"
+                               min="0"
+                               class="form-control" />
+
+                        <span asp-validation-for="Allowances"
+                              class="text-danger">
+                        </span>
+
+                    </div>
+
+
+                    <!-- ========================================= -->
+                    <!-- DEDUCTIONS -->
+                    <!-- ========================================= -->
+
+                    <div class="col-md-6">
+
+                        <label asp-for="Deductions"
+                               class="form-label">
+
+                            Deductions
+
+                        </label>
+
+                        <input asp-for="Deductions"
+                               id="Deductions"
+                               type="number"
+                               step="0.01"
+                               min="0"
+                               class="form-control" />
+
+                        <span asp-validation-for="Deductions"
+                              class="text-danger">
+                        </span>
+
+                    </div>
+
+
+                    <!-- ========================================= -->
+                    <!-- GROSS SALARY -->
+                    <!-- ========================================= -->
+
+                    <div class="col-md-6">
+
+                        <label class="form-label">
+
+                            Gross Salary
+
+                        </label>
+
+                        <input type="text"
+                               id="GrossSalaryDisplay"
+                               class="form-control fw-semibold"
+                               value="0.00"
+                               readonly />
+
+                        <small class="text-muted">
+                            Basic Salary + Overtime + Allowances
+                        </small>
+
+                    </div>
+
+
+                    <!-- ========================================= -->
+                    <!-- NET SALARY -->
+                    <!-- ========================================= -->
+
+                    <div class="col-md-6">
+
+                        <label class="form-label">
+
+                            Net Salary
+
+                        </label>
+
+                        <input type="text"
+                               id="NetSalaryDisplay"
+                               class="form-control fw-bold"
+                               value="0.00"
+                               readonly />
+
+                        <small class="text-muted">
+                            Gross Salary - Deductions
+                        </small>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- ================================================= -->
+            <!-- CARD FOOTER -->
+            <!-- ================================================= -->
+
+            <div class="card-footer bg-white d-flex justify-content-between">
+
+                <a asp-action="Index"
+                   class="btn btn-outline-secondary">
+
+                    Cancel
+
+                </a>
+
+                <button type="submit"
+                        class="btn btn-primary">
+
+                    <i class="bi bi-save"></i>
+                    Save Changes
+
+                </button>
+
+            </div>
+
+        </div>
+
+    </form>
+
+</div>
+
+
+@section Scripts
+{
+    <partial name="_ValidationScriptsPartial" />
+
+    <script>
+
+        document.addEventListener(
+            "DOMContentLoaded",
+            function () {
+
+                const employeeSelect =
+                    document.getElementById("EmployeeId");
+
+                const basicSalary =
+                    document.getElementById("BasicSalary");
+
+                const overtime =
+                    document.getElementById("Overtime");
+
+                const allowances =
+                    document.getElementById("Allowances");
+
+                const deductions =
+                    document.getElementById("Deductions");
+
+                const grossSalaryDisplay =
+                    document.getElementById("GrossSalaryDisplay");
+
+                const netSalaryDisplay =
+                    document.getElementById("NetSalaryDisplay");
+
+
+                // =============================================
+                // Convert value to number
+                // =============================================
+
+                function toNumber(value) {
+
+                    const number =
+                        parseFloat(value);
+
+                    return Number.isFinite(number)
+                        ? number
+                        : 0;
+                }
+
+
+                // =============================================
+                // Format currency
+                // =============================================
+
+                function formatCurrency(value) {
+
+                    return value.toLocaleString(
+                        "en-PH",
+                        {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2
+                        });
+                }
+
+
+                // =============================================
+                // Calculate salary
+                // =============================================
+
+                function calculateSalary() {
+
+                    const basic =
+                        toNumber(
+                            basicSalary.value
+                        );
+
+                    const overtimeValue =
+                        toNumber(
+                            overtime.value
+                        );
+
+                    const allowanceValue =
+                        toNumber(
+                            allowances.value
+                        );
+
+                    const deductionValue =
+                        toNumber(
+                            deductions.value
+                        );
+
+
+                    const gross =
+                        basic +
+                        overtimeValue +
+                        allowanceValue;
+
+
+                    const net =
+                        gross -
+                        deductionValue;
+
+
+                    grossSalaryDisplay.value =
+                        formatCurrency(gross);
+
+
+                    netSalaryDisplay.value =
+                        formatCurrency(net);
+
+                }
+
+
+                // =============================================
+                // Employee changed
+                // =============================================
+
+                employeeSelect.addEventListener(
+                    "change",
+                    function () {
+
+                        const selectedOption =
+                            employeeSelect.options[
+                                employeeSelect.selectedIndex
+                            ];
+
+
+                        if (!selectedOption) {
+                            return;
+                        }
+
+
+                        const salary =
+                            selectedOption.dataset.basicSalary;
+
+
+                        if (salary) {
+
+                            basicSalary.value =
+                                parseFloat(salary)
+                                    .toFixed(2);
+
+                        }
+
+
+                        calculateSalary();
+
+                    });
+
+
+                // =============================================
+                // Input events
+                // =============================================
+
+                basicSalary.addEventListener(
+                    "input",
+                    calculateSalary
+                );
+
+                overtime.addEventListener(
+                    "input",
+                    calculateSalary
+                );
+
+                allowances.addEventListener(
+                    "input",
+                    calculateSalary
+                );
+
+                deductions.addEventListener(
+                    "input",
+                    calculateSalary
+                );
+
+
+                // =============================================
+                // Initial calculation
+                // =============================================
+
+                calculateSalary();
+
+            });
+
+    </script>
+}

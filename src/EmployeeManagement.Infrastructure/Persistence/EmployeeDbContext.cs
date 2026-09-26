@@ -2,6 +2,8 @@
 using EmployeeManagement.Domain.Common;
 using EmployeeManagement.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
+using EmployeeManagement.Infrastructure.Payroll;
+using PayrollEntity = EmployeeManagement.Domain.Entities.Payroll;
 
 namespace EmployeeManagement.Infrastructure.Persistence;
 
@@ -37,7 +39,7 @@ public class EmployeeDbContext : DbContext
     //public DbSet<LeaveType> LeaveTypes => Set<LeaveType>();
     //public DbSet<LeaveAllocation> LeaveAllocations => Set<LeaveAllocation>();
     public DbSet<Attendance> Attendances => Set<Attendance>();
-    public DbSet<Payroll> Payrolls => Set<Payroll>();
+    public DbSet<PayrollEntity> Payrolls => Set<PayrollEntity>();
     //public DbSet<PayrollItem> PayrollItems => Set<PayrollItem>();
     //public DbSet<PayrollItemType> PayrollItemTypes => Set<PayrollItemType>();
     //public DbSet<PayrollPeriod> PayrollPeriods => Set<PayrollPeriod>();
@@ -121,7 +123,47 @@ public class EmployeeDbContext : DbContext
                 .OnDelete(DeleteBehavior.Restrict);
         });
 
+        // =====================================================
+        // PAYROLL
+        // =====================================================
 
+        modelBuilder.Entity<PayrollEntity>(entity =>
+        {
+            entity.HasKey(x => x.Id);
+
+            entity.Property(x => x.BasicSalary)
+                .HasPrecision(18, 2);
+
+            entity.Property(x => x.Overtime)
+                .HasPrecision(18, 2);
+
+            entity.Property(x => x.Allowances)
+                .HasPrecision(18, 2);
+
+            entity.Property(x => x.GrossSalary)
+                .HasPrecision(18, 2);
+
+            entity.Property(x => x.Deductions)
+                .HasPrecision(18, 2);
+
+            entity.Property(x => x.NetSalary)
+                .HasPrecision(18, 2);
+
+            entity.Property(x => x.Status)
+                .HasMaxLength(50)
+                .IsRequired();
+
+            entity.HasOne(x => x.Employee)
+                .WithMany(x => x.Payrolls)
+                .HasForeignKey(x => x.EmployeeId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasIndex(x => new
+            {
+                x.EmployeeId,
+                x.PayrollDate
+            });
+        });
         // -----------------------------------------------------
         // Add your existing Department configuration here
         // -----------------------------------------------------

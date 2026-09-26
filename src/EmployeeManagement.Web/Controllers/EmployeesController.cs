@@ -43,12 +43,13 @@ public class EmployeesController : Controller
     // =========================================================
     // INDEX
     // =========================================================
-
     [HttpGet]
     [Authorize(Roles = "Administrator,HR Manager,Manager")]
-    public async Task<IActionResult> Index(EmployeeSearchModel searchModel)
+    public async Task<IActionResult> Index(
+        EmployeeSearchModel searchModel)
     {
-        var result = await _employeeService.GetPagedAsync(searchModel);
+        var result =
+            await _employeeService.GetPagedAsync(searchModel);
 
         var departments =
             await _departmentService.GetLookupAsync();
@@ -56,22 +57,37 @@ public class EmployeesController : Controller
         var positions =
             await _positionService.GetLookupAsync();
 
-        ViewBag.Search = searchModel.Search;
-        ViewBag.DepartmentId = searchModel.DepartmentId;
-        ViewBag.PositionId = searchModel.PositionId;
-        ViewBag.Status = searchModel.Status;
-        ViewBag.EmploymentType = searchModel.EmploymentType;
-        ViewBag.HireDateFrom = searchModel.HireDateFrom;
-        ViewBag.HireDateTo = searchModel.HireDateTo;
-        ViewBag.SortBy = searchModel.SortBy;
-        ViewBag.SortDescending = searchModel.SortDescending;
+        var model = new EmployeeIndexViewModel
+        {
+            Employees = result,
 
-        ViewBag.Departments = departments;
-        ViewBag.Positions = positions;
+            Search = searchModel.Search,
 
-        return View(result);
+            DepartmentId = searchModel.DepartmentId,
+
+            PositionId = searchModel.PositionId,
+
+            EmploymentType = searchModel.EmploymentType,
+
+            Status = searchModel.Status,
+
+            HireDateFrom = searchModel.HireDateFrom,
+
+            HireDateTo = searchModel.HireDateTo,
+
+            PageSize = searchModel.PageSize,
+
+            SortBy = searchModel.SortBy,
+
+            SortDescending = searchModel.SortDescending,
+
+            Departments = departments,
+
+            Positions = positions
+        };
+
+        return View(model);
     }
-
 
     // =========================================================
     // DETAILS

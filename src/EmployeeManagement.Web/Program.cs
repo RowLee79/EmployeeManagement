@@ -8,6 +8,7 @@ using EmployeeManagement.Application.Positions.Interfaces;
 using EmployeeManagement.Application.Reporting;
 using EmployeeManagement.Application.Users.Interfaces;
 using EmployeeManagement.Infrastructure.Identity;
+using EmployeeManagement.Infrastructure.Payroll;
 using EmployeeManagement.Infrastructure.Persistence;
 using EmployeeManagement.Infrastructure.Services;
 using EmployeeManagement.Web.Logging;
@@ -196,6 +197,7 @@ builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
 builder.Services.AddScoped<IDashboardService, DashboardService>();
 builder.Services.AddScoped<IDateTimeService, DateTimeService>();
 
+builder.Services.AddScoped<IPayrollService, PayrollService>();
 // ============================================================
 // File Storage
 // ============================================================

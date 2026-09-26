@@ -5,27 +5,11 @@
 @using EmployeeManagement.Application.Positions.Models
 @using EmployeeManagement.Domain.Enums
 
-@model PagedResult<EmployeeListModel>
+@model EmployeeIndexViewModel
 
 @{
     ViewData["Title"] = "Employees";
 
-    // ============================================================
-    // LOOKUPS
-    // ============================================================
-
-    var departments =
-        ViewBag.Departments as IReadOnlyList<DepartmentLookup>
-        ?? Array.Empty<DepartmentLookup>();
-
-    var positions =
-        ViewBag.Positions as IReadOnlyList<PositionLookup>
-        ?? Array.Empty<PositionLookup>();
-
-
-    // ============================================================
-    // FILTER VALUES
-    // ============================================================
 
     int? ToNullableInt(object? value)
     {
@@ -248,7 +232,7 @@
                             <input type="text"
                                    id="Search"
                                    name="Search"
-                                   value="@search"
+                                   value="@Model.Search"
                                    class="form-control"
                                    autocomplete="off"
                                    placeholder="Employee number, name, email..." />
@@ -279,10 +263,10 @@
                                 All Departments
                             </option>
 
-                            @foreach (var department in departments)
+                            @foreach (var department in Model.Departments)
                             {
                                 <option value="@department.Id"
-                                        selected="@(selectedDepartmentId == department.Id ? "selected" : null)">
+                                        selected="@(Model.DepartmentId == department.Id ? "selected" : null)">
 
                                     @department.Name
 
@@ -315,11 +299,11 @@
                                 All Positions
                             </option>
 
-                            @foreach (var position in positions)
+                            @foreach (var position in Model.Positions)
                             {
                                 <option value="@position.Id"
                                         data-department-id="@position.DepartmentId"
-                                        selected="@(selectedPositionId == position.Id ? "selected" : null)">
+                                        selected="@(Model.PositionId == position.Id ? "selected" : null)">
 
                                     @position.Name
 
@@ -359,10 +343,11 @@
                                     Convert.ToInt32(item.Value);
 
                                 <option value="@itemValue"
-                                        selected="@(selectedEmploymentType == itemValue ? "selected" : null)">
-
+                                        selected="@(Model.EmploymentType.HasValue &&
+                                                                (int)Model.EmploymentType.Value == itemValue
+                                                        ? "selected"
+                                                        : null)">
                                     @item.Text
-
                                 </option>
                             }
 
@@ -399,10 +384,11 @@
                                     Convert.ToInt32(item.Value);
 
                                 <option value="@itemValue"
-                                        selected="@(selectedStatus == itemValue ? "selected" : null)">
-
+                                        selected="@(Model.Status.HasValue &&
+                                                                (int)Model.Status.Value == itemValue
+                                                        ? "selected"
+                                                        : null)">
                                     @item.Text
-
                                 </option>
                             }
 
@@ -423,11 +409,10 @@
                             Hire Date From
 
                         </label>
-
                         <input type="date"
                                id="HireDateFrom"
                                name="HireDateFrom"
-                               value="@(hireDateFrom?.ToString("yyyy-MM-dd") ?? string.Empty)"
+                               value="@(Model.HireDateFrom?.ToString("yyyy-MM-dd") ?? string.Empty)"
                                class="form-control" />
 
                     </div>
@@ -449,7 +434,7 @@
                         <input type="date"
                                id="HireDateTo"
                                name="HireDateTo"
-                               value="@(hireDateTo?.ToString("yyyy-MM-dd") ?? string.Empty)"
+                               value="@(Model.HireDateTo?.ToString("yyyy-MM-dd") ?? string.Empty)"
                                class="form-control" />
 
                     </div>
@@ -475,10 +460,10 @@
                             @foreach (var size in new[] { 10, 25, 50, 100 })
                             {
                                 <option value="@size"
-                                        selected="@(pageSize == size ? "selected" : null)">
-
+                                        selected="@(Model.Employees.PageSize == size
+                                                        ? "selected"
+                                                        : null)">
                                     @size
-
                                 </option>
                             }
 
@@ -543,7 +528,7 @@
 
             @await Html.PartialAsync(
                 "_EmployeeResults",
-                Model)
+                Model.Employees)
 
         </div>
 
