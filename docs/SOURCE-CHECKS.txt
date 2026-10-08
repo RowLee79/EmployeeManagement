@@ -1,0 +1,9 @@
+PASS JSON configurations parse
+PASS Project, solution and configuration XML parse
+PASS All project references resolve
+PASS Core and optional Windows solutions separated
+PASS Sidebar and account navigation actions exist
+PASS All four report forms include wired report type
+PASS Attendance enum, administrator configuration and relationship snapshot checks pass
+Test methods supplied: 18 (not executed)
+Build, xUnit, SQL Server and browser validation pending.

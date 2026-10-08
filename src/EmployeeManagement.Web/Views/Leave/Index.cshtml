@@ -1,0 +1,379 @@
+﻿@using EmployeeManagement.Application.Common.Models
+@using EmployeeManagement.Application.LeaveManagement.Models
+@using EmployeeManagement.Domain.Enums
+
+@model PagedResult<LeaveRequestListModel>
+
+@{
+    ViewData["Title"] = "Leave Management";
+}
+
+<div class="page-header">
+
+    <div>
+        <h1 class="page-title">
+            Leave Management
+        </h1>
+
+        <p class="text-muted mb-0">
+            Manage employee leave requests and approvals.
+        </p>
+    </div>
+
+    <a asp-action="Create"
+       class="btn btn-primary">
+
+        <i class="bi bi-plus-lg me-1"></i>
+
+        New Leave Request
+
+    </a>
+
+</div>
+
+<div class="card shadow-sm border-0 mt-4">
+
+    <div class="card-body">
+
+        <form method="get"
+              class="row g-3">
+
+            <div class="col-md-3">
+
+                <label class="form-label">
+                    Search
+                </label>
+
+                <input type="text"
+                       name="search"
+                       value="@ViewBag.Search"
+                       class="form-control"
+                       placeholder="Employee name or number" />
+
+            </div>
+
+            <div class="col-md-2">
+
+                <label class="form-label">
+                    Leave Type
+                </label>
+
+                <select name="leaveType"
+                        class="form-select">
+
+                    <option value="">
+                        All Types
+                    </option>
+
+                    @foreach (var type in
+                        Enum.GetValues<LeaveType>())
+                    {
+                        <option value="@type"
+                                selected="@(ViewBag.LeaveType?.ToString() == type.ToString())">
+                            @type
+                        </option>
+                    }
+
+                </select>
+
+            </div>
+
+            <div class="col-md-2">
+
+                <label class="form-label">
+                    Status
+                </label>
+
+                <select name="status"
+                        class="form-select">
+
+                    <option value="">
+                        All Statuses
+                    </option>
+
+                    @foreach (var status in
+                        Enum.GetValues<LeaveStatus>())
+                    {
+                        <option value="@status"
+                                selected="@(ViewBag.Status?.ToString() == status.ToString())">
+                            @status
+                        </option>
+                    }
+
+                </select>
+
+            </div>
+
+            <div class="col-md-2">
+
+                <label class="form-label">
+                    From
+                </label>
+
+                <input type="date"
+                       name="dateFrom"
+                       value="@ViewBag.DateFromValue"
+                       class="form-control" />
+
+            </div>
+
+            <div class="col-md-2">
+
+                <label class="form-label">
+                    To
+                </label>
+
+                <input type="date"
+                       name="dateTo"
+                       value="@ViewBag.DateToValue"
+                       class="form-control" />
+
+            </div>
+
+            <div class="col-md-1 d-flex align-items-end">
+
+                <button type="submit"
+                        class="btn btn-primary w-100">
+
+                    <i class="bi bi-search"></i>
+
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+<div class="card shadow-sm border-0 mt-4">
+
+    <div class="table-responsive">
+
+        <table class="table table-hover align-middle mb-0">
+
+            <thead>
+
+                <tr>
+
+                    <th>Employee</th>
+                    <th>Leave Type</th>
+                    <th>Period</th>
+                    <th>Days</th>
+                    <th>Status</th>
+                    <th class="text-end">Action</th>
+
+                </tr>
+
+            </thead>
+
+            <tbody>
+
+                @if (!Model.Items.Any())
+                {
+                    <tr>
+
+                        <td colspan="6"
+                            class="text-center py-5">
+
+                            <i class="bi bi-calendar-x fs-1 text-muted"></i>
+
+                            <div class="mt-2 text-muted">
+                                No leave requests found.
+                            </div>
+
+                        </td>
+
+                    </tr>
+                }
+                else
+                {
+                    foreach (var item in Model.Items)
+                    {
+                        <tr>
+
+                            <td>
+
+                                <div class="fw-semibold">
+                                    @item.EmployeeName
+                                </div>
+
+                                <small class="text-muted">
+                                    @item.EmployeeNumber
+                                </small>
+
+                            </td>
+
+                            <td>
+                                @item.LeaveType
+                            </td>
+
+                            <td>
+
+                                @item.StartDate.ToString("MMM dd, yyyy")
+                                -
+                                @item.EndDate.ToString("MMM dd, yyyy")
+
+                            </td>
+
+                            <td>
+
+                                <span class="fw-semibold">
+                                    @item.TotalDays
+                                </span>
+
+                            </td>
+
+                            <td>
+
+                                @{
+                                    var badgeClass =
+                                        item.Status switch
+                                        {
+                                            LeaveStatus.Approved => "bg-success",
+                                            LeaveStatus.Rejected => "bg-danger",
+                                            LeaveStatus.Cancelled => "bg-secondary",
+
+                                            _ =>
+                                                "bg-warning text-dark"
+                                        };
+                                }
+
+                                <span class="badge @badgeClass">
+                                    @item.Status
+                                </span>
+
+                            </td>
+
+                            <td class="text-end">
+
+                                <a asp-action="Details"
+                                   asp-route-id="@item.Id"
+                                   class="btn btn-sm btn-outline-primary">
+
+                                    <i class="bi bi-eye"></i>
+
+                                </a>
+
+                            </td>
+
+                        </tr>
+                    }
+                }
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>
+
+@if (Model.TotalPages > 1)
+{
+    <nav class="mt-4" aria-label="Leave pagination">
+
+        <ul class="pagination justify-content-center">
+
+            @if (Model.HasPrevious)
+            {
+                <li class="page-item">
+
+                    <a class="page-link"
+                       asp-action="Index"
+                       asp-route-pageNumber="@(Model.PageNumber - 1)"
+                       asp-route-pageSize="@Model.PageSize"
+                       asp-route-search="@ViewBag.Search"
+                       asp-route-leaveType="@ViewBag.LeaveType"
+                       asp-route-status="@ViewBag.Status"
+                       asp-route-dateFrom="@ViewBag.DateFromValue"
+                       asp-route-dateTo="@ViewBag.DateToValue">
+                        Previous
+                    </a>
+
+                </li>
+            }
+            else
+            {
+                <li class="page-item disabled">
+
+                    <span class="page-link">
+                        Previous
+                    </span>
+
+                </li>
+            }
+
+            @for (var pageNumber = 1;
+                  pageNumber <= Model.TotalPages;
+                  pageNumber++)
+            {
+                if (pageNumber == Model.PageNumber)
+                {
+                    <li class="page-item active"
+                        aria-current="page">
+
+                        <span class="page-link">
+                            @pageNumber
+                        </span>
+
+                    </li>
+                }
+                else
+                {
+                    <li class="page-item">
+
+                        <a class="page-link"
+                           asp-action="Index"
+                           asp-route-pageNumber="@pageNumber"
+                           asp-route-pageSize="@Model.PageSize"
+                           asp-route-search="@ViewBag.Search"
+                           asp-route-leaveType="@ViewBag.LeaveType"
+                           asp-route-status="@ViewBag.Status"
+                           asp-route-dateFrom="@ViewBag.DateFromValue"
+                           asp-route-dateTo="@ViewBag.DateToValue">
+
+                            @pageNumber
+
+                        </a>
+
+                    </li>
+                }
+            }
+
+            @if (Model.HasNext)
+            {
+                <li class="page-item">
+
+                    <a class="page-link"
+                       asp-action="Index"
+                       asp-route-pageNumber="@(Model.PageNumber + 1)"
+                       asp-route-pageSize="@Model.PageSize"
+                       asp-route-search="@ViewBag.Search"
+                       asp-route-leaveType="@ViewBag.LeaveType"
+                       asp-route-status="@ViewBag.Status"
+                       asp-route-dateFrom="@ViewBag.DateFromValue"
+                       asp-route-dateTo="@ViewBag.DateToValue">
+
+                        Next
+
+                    </a>
+
+                </li>
+            }
+            else
+            {
+                <li class="page-item disabled">
+
+                    <span class="page-link">
+                        Next
+                    </span>
+
+                </li>
+            }
+
+        </ul>
+
+    </nav>
+}

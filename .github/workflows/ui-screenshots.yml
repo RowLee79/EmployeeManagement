@@ -1,0 +1,85 @@
+name: Capture demo UI screenshots
+on:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  screenshots:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    services:
+      sqlserver:
+        image: mcr.microsoft.com/mssql/server:2022-latest
+        env:
+          ACCEPT_EULA: Y
+          MSSQL_SA_PASSWORD: "DemoSql!${{ github.run_id }}Aa1"
+        ports:
+          - 1433:1433
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Build application
+        run: dotnet build EmployeeManagement.slnx -c Release
+      - name: Wait for demo SQL Server
+        shell: bash
+        run: |
+          echo "::add-mask::DemoSql!${{ github.run_id }}Aa1"
+          for attempt in {1..60}; do
+            if docker exec "${{ job.services.sqlserver.id }}" /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "DemoSql!${{ github.run_id }}Aa1" -C -Q "SELECT 1" >/dev/null 2>&1; then
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "SQL Server did not become ready."
+          exit 1
+      - name: Start demo application
+        shell: bash
+        env:
+          ASPNETCORE_ENVIRONMENT: Development
+          ASPNETCORE_URLS: http://localhost:5131
+          ConnectionStrings__DefaultConnection: "Server=localhost,1433;Database=EmployeeManagementDemo;User ID=sa;Password=DemoSql!${{ github.run_id }}Aa1;TrustServerCertificate=True"
+          SeedAdmin__Email: demo@employeemanagement.test
+          Database__SeedDemoData: 'true'
+        run: |
+          demo_password="UiDemo@1$(openssl rand -hex 16)"
+          echo "::add-mask::$demo_password"
+          echo "UI_CAPTURE_PASSWORD=$demo_password" >> "$GITHUB_ENV"
+          export SeedAdmin__Password="$demo_password"
+          dotnet run --project src/EmployeeManagement.Web -c Release --no-build --no-launch-profile > app-startup.log 2>&1 &
+          echo $! > app-process.pid
+          for attempt in {1..90}; do
+            if curl --fail --silent http://localhost:5131/Account/Login > /dev/null; then
+              exit 0
+            fi
+            if ! kill -0 "$(cat app-process.pid)" 2>/dev/null; then
+              cat app-startup.log
+              exit 1
+            fi
+            sleep 2
+          done
+          cat app-startup.log
+          exit 1
+      - name: Install screenshot browser
+        working-directory: tools/ui-screenshots
+        run: |
+          npm install
+          npx playwright install --with-deps chromium
+      - name: Capture actual demo UI
+        working-directory: tools/ui-screenshots
+        env:
+          CI: 'true'
+          UI_CAPTURE_EMAIL: demo@employeemanagement.test
+        run: npm run capture -- http://localhost:5131
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: employee-management-ui
+          path: |
+            docs/screenshots/*.png
+            README.md
+            app-startup.log

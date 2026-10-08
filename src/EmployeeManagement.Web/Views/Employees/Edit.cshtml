@@ -1,0 +1,455 @@
+@using EmployeeManagement.Application.Departments.Models
+@using EmployeeManagement.Application.Positions.Models
+@using EmployeeManagement.Domain.Enums
+@model EmployeeManagement.Web.Models.Employees.EmployeeEditViewModel
+
+@{
+    ViewData["Title"] = "Edit Employee";
+
+    var employeeId = ViewBag.EmployeeId;
+
+    var imageUrl = string.IsNullOrWhiteSpace(Model.Employee.ProfileImage)
+        ? Url.Content("~/images/default-avatar.svg")
+        : Model.Employee.ProfileImage;
+}
+
+<div class="container-fluid py-4">
+
+    <!-- HEADER -->
+    <div class="d-flex flex-column flex-md-row
+                justify-content-between
+                align-items-md-center mb-4">
+
+        <div>
+
+            <h2 class="fw-bold mb-1">
+
+                <i class="bi bi-person-gear me-2"></i>
+
+                Edit Employee
+
+            </h2>
+
+            <p class="text-muted mb-0">
+
+                Update employee information and profile image.
+
+            </p>
+
+        </div>
+
+
+        <div class="mt-3 mt-md-0">
+
+            <a asp-action="Details"
+               asp-route-id="@employeeId"
+               class="btn btn-outline-secondary">
+
+                <i class="bi bi-arrow-left me-1"></i>
+
+                Back to Details
+
+            </a>
+
+        </div>
+
+    </div>
+
+
+    <!-- VALIDATION -->
+    <div asp-validation-summary="ModelOnly"
+         class="alert alert-danger">
+    </div>
+
+
+    <!-- FORM -->
+    <form asp-action="Edit"
+          asp-route-id="@employeeId"
+          method="post"
+          enctype="multipart/form-data">
+
+        @Html.AntiForgeryToken()
+
+
+        <div class="row g-4">
+
+            <!-- MAIN FORM -->
+            <div class="col-lg-8">
+
+                <partial name="_EmployeeForm"
+                         model="Model" />
+
+            </div>
+
+
+            <!-- RIGHT SIDE -->
+            <div class="col-lg-4">
+
+                <!-- PROFILE IMAGE -->
+                <div class="card shadow-sm border-0 mb-4">
+
+                    <div class="card-header bg-white py-3">
+
+                        <h5 class="mb-0 fw-semibold">
+
+                            <i class="bi bi-person-badge me-2 text-primary"></i>
+
+                            Profile Image
+
+                        </h5>
+
+                    </div>
+
+
+                    <div class="card-body">
+
+                        <div class="text-center mb-4">
+
+                            <img id="profileImagePreview"
+                                 src="@imageUrl"
+                                 alt="Employee Profile"
+                                 class="rounded-circle border shadow-sm"
+                                 style="width:160px;
+                                        height:160px;
+                                        object-fit:cover;" />
+
+                        </div>
+
+
+                        <div class="mb-3">
+
+                            <label asp-for="ProfileImageFile"
+                                   class="form-label fw-semibold">
+
+                                Change Profile Image
+
+                            </label>
+
+                            <input asp-for="ProfileImageFile"
+                                   type="file"
+                                   class="form-control"
+                                   accept=".jpg,.jpeg,.png,.webp" />
+
+                            <div class="form-text">
+
+                                JPG, JPEG, PNG, or WEBP.
+                                Maximum size: 5 MB.
+
+                            </div>
+
+                            <span asp-validation-for="ProfileImageFile"
+                                  class="text-danger">
+                            </span>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- EMPLOYEE SUMMARY -->
+                <div class="card shadow-sm border-0 mb-4">
+
+                    <div class="card-header bg-white py-3">
+
+                        <h5 class="mb-0 fw-semibold">
+
+                            <i class="bi bi-info-circle me-2 text-primary"></i>
+
+                            Employee Summary
+
+                        </h5>
+
+                    </div>
+
+
+                    <div class="card-body">
+
+                        <div class="mb-3">
+
+                            <small class="text-muted d-block">
+
+                                Employee Number
+
+                            </small>
+
+                            <div class="fw-semibold">
+
+                                @Model.Employee.EmployeeNumber
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="mb-3">
+
+                            <small class="text-muted d-block">
+
+                                Employee Name
+
+                            </small>
+
+                            <div class="fw-semibold">
+
+                                @string.Join(
+                                    " ",
+                                    new[]
+                                    {
+                                        Model.Employee.FirstName,
+                                        Model.Employee.MiddleName,
+                                        Model.Employee.LastName,
+                                        Model.Employee.Suffix
+                                    }
+                                    .Where(x =>
+                                        !string.IsNullOrWhiteSpace(x)))
+
+                            </div>
+
+                        </div>
+
+
+                        <div>
+
+                            <small class="text-muted d-block">
+
+                                Profile Image
+
+                            </small>
+
+                            <div class="small text-muted">
+
+                                @(string.IsNullOrWhiteSpace(
+                                    Model.Employee.ProfileImage)
+                                    ? "Default image"
+                                    : "Custom profile image")
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- ACTIONS -->
+        <div class="card shadow-sm border-0">
+
+            <div class="card-body">
+
+                <div class="d-flex justify-content-between">
+
+                    <a asp-action="Details"
+                       asp-route-id="@employeeId"
+                       class="btn btn-outline-secondary">
+
+                        <i class="bi bi-x-circle me-1"></i>
+
+                        Cancel
+
+                    </a>
+
+
+                    <button type="submit"
+                            class="btn btn-primary px-4">
+
+                        <i class="bi bi-check-circle me-1"></i>
+
+                        Save Changes
+
+                    </button>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </form>
+
+</div>
+
+
+@section Scripts {
+
+    <partial name="_ValidationScriptsPartial" />
+
+    <script>
+
+        document.addEventListener("DOMContentLoaded", function () {
+
+            /*
+             * ======================================================
+             * PROFILE IMAGE PREVIEW
+             * ======================================================
+             */
+
+            const imageInput =
+                document.getElementById("ProfileImageFile");
+
+            const imagePreview =
+                document.getElementById("profileImagePreview");
+
+
+            if (imageInput && imagePreview) {
+
+                imageInput.addEventListener("change", function () {
+
+                    const file = this.files[0];
+
+                    if (!file) {
+                        return;
+                    }
+
+
+                    const allowedTypes = [
+                        "image/jpeg",
+                        "image/png",
+                        "image/webp"
+                    ];
+
+
+                    if (!allowedTypes.includes(file.type)) {
+
+                        alert(
+                            "Please select a JPG, JPEG, PNG, or WEBP image."
+                        );
+
+                        this.value = "";
+
+                        return;
+                    }
+
+
+                    const maxSize =
+                        5 * 1024 * 1024;
+
+
+                    if (file.size > maxSize) {
+
+                        alert(
+                            "Profile image must not exceed 5 MB."
+                        );
+
+                        this.value = "";
+
+                        return;
+                    }
+
+
+                    const reader =
+                        new FileReader();
+
+
+                    reader.onload = function (event) {
+
+                        imagePreview.src =
+                            event.target.result;
+
+                    };
+
+
+                    reader.readAsDataURL(file);
+
+                });
+
+            }
+
+
+            /*
+             * ======================================================
+             * DEPARTMENT -> POSITION
+             * ======================================================
+             */
+
+            const departmentSelect =
+                document.getElementById("DepartmentId");
+
+            const positionSelect =
+                document.getElementById("PositionId");
+
+
+            if (!departmentSelect || !positionSelect) {
+                return;
+            }
+
+
+            const existingPositionId =
+                positionSelect.value;
+
+
+            const positionOptions =
+                Array.from(
+                    positionSelect.querySelectorAll(
+                        "option[data-department-id]"
+                    )
+                );
+
+
+            function filterPositions(resetPosition) {
+
+                const departmentId =
+                    departmentSelect.value;
+
+
+                positionOptions.forEach(function (option) {
+
+                    const optionDepartmentId =
+                        option.getAttribute(
+                            "data-department-id"
+                        );
+
+
+                    const belongsToDepartment =
+                        departmentId !== "" &&
+                        optionDepartmentId === departmentId;
+
+
+                    option.hidden =
+                        !belongsToDepartment;
+
+                    option.disabled =
+                        !belongsToDepartment;
+
+                });
+
+
+                if (resetPosition) {
+
+                    positionSelect.value = "";
+
+                }
+                else {
+
+                    positionSelect.value =
+                        existingPositionId;
+
+                }
+
+            }
+
+
+            // Initial page load.
+            filterPositions(false);
+
+
+            // Department changed.
+            departmentSelect.addEventListener(
+                "change",
+                function () {
+
+                    filterPositions(true);
+
+                }
+            );
+
+        });
+
+    </script>
+}

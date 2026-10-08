@@ -1,0 +1,8 @@
+@{ ViewData["Title"] = "System Settings"; }
+<div class="card shadow-sm"><div class="card-body p-4">
+<h1 class="h4">System Settings</h1>
+<dl class="row mt-4"><dt class="col-sm-4">Report provider</dt><dd class="col-sm-8">@ViewBag.ReportingProvider</dd>
+<dt class="col-sm-4">Demo seeding</dt><dd class="col-sm-8">@ViewBag.DemoData</dd>
+<dt class="col-sm-4">Withholding calculation enabled</dt><dd class="col-sm-8">@ViewBag.TaxEnabled</dd></dl>
+<p class="text-muted">Configuration changes require deployment configuration and an application restart.</p>
+</div></div>

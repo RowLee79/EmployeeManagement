@@ -1,0 +1,281 @@
+﻿@model EmployeeManagement.Application.LeaveManagement.Models.LeaveRequestDetailsModel
+@using EmployeeManagement.Domain.Enums
+@{
+    ViewData["Title"] = "Leave Request Details";
+
+    var badgeClass =
+        Model.Status switch
+        {
+            LeaveStatus.Approved => "bg-success",
+            LeaveStatus.Rejected => "bg-danger",
+            LeaveStatus.Cancelled => "bg-secondary",
+            _ => "bg-warning text-dark"
+        };
+}
+
+<div class="page-header">
+
+    <div>
+        <h1 class="page-title">
+            Leave Request
+        </h1>
+
+        <p class="text-muted mb-0">
+            View leave request details and approval status.
+        </p>
+    </div>
+
+    <a asp-action="Index"
+       class="btn btn-outline-secondary">
+
+        <i class="bi bi-arrow-left me-1"></i>
+
+        Back
+
+    </a>
+
+</div>
+
+<div class="row g-4 mt-2">
+
+    <div class="col-lg-8">
+
+        <div class="card shadow-sm border-0">
+
+            <div class="card-body">
+
+                <div class="d-flex justify-content-between">
+
+                    <div>
+
+                        <h5 class="fw-bold mb-1">
+                            @Model.EmployeeName
+                        </h5>
+
+                        <div class="text-muted">
+                            @Model.EmployeeNumber
+                        </div>
+
+                    </div>
+
+                    <span class="badge @badgeClass align-self-start">
+                        @Model.Status
+                    </span>
+
+                </div>
+
+                <hr />
+
+                <div class="row g-4">
+
+                    <div class="col-md-6">
+
+                        <small class="text-muted d-block">
+                            Leave Type
+                        </small>
+
+                        <strong>
+                            @Model.LeaveType
+                        </strong>
+
+                    </div>
+
+                    <div class="col-md-6">
+
+                        <small class="text-muted d-block">
+                            Total Days
+                        </small>
+
+                        <strong>
+                            @Model.TotalDays
+                        </strong>
+
+                    </div>
+
+                    <div class="col-md-6">
+
+                        <small class="text-muted d-block">
+                            Start Date
+                        </small>
+
+                        <strong>
+                            @Model.StartDate.ToString("MMMM dd, yyyy")
+                        </strong>
+
+                    </div>
+
+                    <div class="col-md-6">
+
+                        <small class="text-muted d-block">
+                            End Date
+                        </small>
+
+                        <strong>
+                            @Model.EndDate.ToString("MMMM dd, yyyy")
+                        </strong>
+
+                    </div>
+
+                    <div class="col-12">
+
+                        <small class="text-muted d-block">
+                            Reason
+                        </small>
+
+                        <div class="mt-2">
+                            @Model.Reason
+                        </div>
+
+                    </div>
+
+                    @if (!string.IsNullOrWhiteSpace(Model.RejectionReason))
+                    {
+                        <div class="col-12">
+
+                            <div class="alert alert-danger">
+
+                                <strong>
+                                    Rejection Reason
+                                </strong>
+
+                                <div class="mt-1">
+                                    @Model.RejectionReason
+                                </div>
+
+                            </div>
+
+                        </div>
+                    }
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="col-lg-4">
+
+        <div class="card shadow-sm border-0">
+
+            <div class="card-body">
+
+                <h5 class="fw-bold">
+                    Actions
+                </h5>
+
+                @if (Model.Status == LeaveStatus.Pending)
+                {
+                    <form asp-action="Approve"
+                          method="post"
+                          class="mb-2">
+
+                        @Html.AntiForgeryToken()
+
+                        <input type="hidden"
+                               name="id"
+                               value="@Model.Id" />
+
+                        <button type="submit"
+                                class="btn btn-success w-100">
+
+                            <i class="bi bi-check-lg me-1"></i>
+
+                            Approve
+
+                        </button>
+
+                    </form>
+
+                    <form asp-action="Reject"
+                          method="post"
+                          class="mb-2">
+
+                        @Html.AntiForgeryToken()
+
+                        <input type="hidden"
+                               name="id"
+                               value="@Model.Id" />
+
+                        <textarea name="reason"
+                                  class="form-control mb-2"
+                                  rows="3"
+                                  placeholder="Rejection reason"
+                                  required></textarea>
+
+                        <button type="submit"
+                                class="btn btn-danger w-100">
+
+                            <i class="bi bi-x-lg me-1"></i>
+
+                            Reject
+
+                        </button>
+
+                    </form>
+                }
+
+                @if (Model.Status == LeaveStatus.Pending ||
+                     Model.Status == LeaveStatus.Approved)
+                {
+                    <form asp-action="Cancel"
+                          method="post">
+
+                        @Html.AntiForgeryToken()
+
+                        <input type="hidden"
+                               name="id"
+                               value="@Model.Id" />
+
+                        <button type="submit"
+                                class="btn btn-outline-secondary w-100">
+
+                            <i class="bi bi-ban me-1"></i>
+
+                            Cancel Request
+
+                        </button>
+
+                    </form>
+                }
+
+            </div>
+
+        </div>
+
+        @if (Model.Status == LeaveStatus.Approved)
+        {
+            <div class="card shadow-sm border-0 mt-3">
+
+                <div class="card-body">
+
+                    <h6 class="fw-bold">
+                        Approval Information
+                    </h6>
+
+                    <div class="small text-muted">
+                        Approved By
+                    </div>
+
+                    <div>
+                        @Model.ApprovedBy
+                    </div>
+
+                    <div class="small text-muted mt-3">
+                        Approved Date
+                    </div>
+
+                    <div>
+                        @Model.ApprovedDate?.ToString(
+                            "MMMM dd, yyyy hh:mm tt")
+                    </div>
+
+                </div>
+
+            </div>
+        }
+
+    </div>
+
+</div>

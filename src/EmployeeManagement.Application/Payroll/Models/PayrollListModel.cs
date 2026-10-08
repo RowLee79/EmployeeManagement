@@ -1,0 +1,30 @@
+namespace EmployeeManagement.Application.Payroll.Models;
+
+public class PayrollListModel
+{
+    public int Id { get; set; }
+
+    public int EmployeeId { get; set; }
+
+    public string EmployeeNumber { get; set; } = string.Empty;
+
+    public string EmployeeName { get; set; } = string.Empty;
+
+    public int? PayrollPeriodId { get; set; }
+    public string? PayrollPeriodCode { get; set; }
+    public DateTime PayrollDate { get; set; }
+
+    public decimal BasicSalary { get; set; }
+
+    public decimal Overtime { get; set; }
+
+    public decimal Allowances { get; set; }
+
+    public decimal GrossSalary { get; set; }
+
+    public decimal Deductions { get; set; }
+
+    public decimal NetSalary { get; set; }
+
+    public string Status { get; set; } = string.Empty;
+}

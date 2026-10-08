@@ -1,0 +1,14 @@
+@model EmployeeManagement.Web.Models.Account.ProfileViewModel
+@{ ViewData["Title"] = "My Profile"; }
+<partial name="_Notifications" />
+<div class="card shadow-sm mx-auto" style="max-width:620px"><div class="card-body p-4">
+<h1 class="h4 mb-4">@ViewData["Title"]</h1>
+<form method="post">
+<div asp-validation-summary="ModelOnly" class="text-danger"></div>
+<p class="text-muted">@Model.Email</p>
+<div class="mb-3"><label asp-for="FirstName" class="form-label"></label><input asp-for="FirstName" class="form-control" /><span asp-validation-for="FirstName" class="text-danger"></span></div>
+<div class="mb-3"><label asp-for="LastName" class="form-label"></label><input asp-for="LastName" class="form-control" /><span asp-validation-for="LastName" class="text-danger"></span></div>
+<div class="mb-3"><label asp-for="PhoneNumber" class="form-label"></label><input asp-for="PhoneNumber" class="form-control" /><span asp-validation-for="PhoneNumber" class="text-danger"></span></div>
+<button class="btn btn-primary" type="submit">Save changes</button>
+</form></div></div>
+@section Scripts { <partial name="_ValidationScriptsPartial" /> }

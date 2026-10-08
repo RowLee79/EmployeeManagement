@@ -1,0 +1,203 @@
+﻿@using EmployeeManagement.Domain.Enums
+@model EmployeeManagement.Application.Attendance.Models.AttendanceCreateModel
+
+@{
+    ViewData["Title"] = "Add Attendance";
+}
+
+<div class="page-header">
+
+    <div>
+        <h1>Add Attendance</h1>
+        <p>Record employee working hours.</p>
+    </div>
+
+    <a asp-action="Index"
+       class="btn btn-light">
+
+        <i class="bi bi-arrow-left me-1"></i>
+        Back
+
+    </a>
+
+</div>
+
+
+<div class="card shadow-sm border-0">
+
+    <div class="card-body">
+
+        <form asp-action="Create"
+              method="post">
+
+            @Html.AntiForgeryToken()
+
+            <div asp-validation-summary="ModelOnly"
+                 class="alert alert-danger">
+            </div>
+
+
+            <div class="row g-4">
+
+                <div class="col-md-6">
+
+                    <label asp-for="EmployeeId"
+                           class="form-label">
+
+                        Employee
+                        <span class="text-danger">*</span>
+
+                    </label>
+
+                    <select asp-for="EmployeeId"
+                            class="form-select">
+
+                        <option value="">
+                            Select employee
+                        </option>
+
+                        @if (ViewBag.Employees is not null)
+                        {
+                            foreach (var employee
+                                in ViewBag.Employees)
+                            {
+                                <option value="@employee.Id">
+
+                                    @employee.EmployeeNumber -
+                                    @employee.FullName
+
+                                </option>
+                            }
+                        }
+
+                    </select>
+
+                    <span asp-validation-for="EmployeeId"
+                          class="text-danger">
+                    </span>
+
+                </div>
+
+
+                <div class="col-md-6">
+
+                    <label asp-for="AttendanceDate"
+                           class="form-label">
+
+                        Attendance Date
+                        <span class="text-danger">*</span>
+
+                    </label>
+
+                    <input asp-for="AttendanceDate"
+                           type="date"
+                           class="form-control" />
+
+                    <span asp-validation-for="AttendanceDate"
+                          class="text-danger">
+                    </span>
+
+                </div>
+
+
+                <div class="col-md-4">
+
+                    <label asp-for="TimeIn"
+                           class="form-label">
+
+                        Time In
+
+                    </label>
+
+                    <input asp-for="TimeIn"
+                           type="time"
+                           class="form-control" />
+
+                </div>
+
+
+                <div class="col-md-4">
+
+                    <label asp-for="TimeOut"
+                           class="form-label">
+
+                        Time Out
+
+                    </label>
+
+                    <input asp-for="TimeOut"
+                           type="time"
+                           class="form-control" />
+
+                </div>
+
+
+                <div class="col-md-4">
+
+                    <label asp-for="Status"
+                           class="form-label">
+
+                        Status
+
+                    </label>
+
+                    <select asp-for="Status"
+                            asp-items="Html.GetEnumSelectList<AttendanceStatus>()"
+                            class="form-select">
+                    </select>
+
+                </div>
+
+            </div>
+
+
+            <div class="alert alert-info mt-4">
+
+                <i class="bi bi-info-circle me-2"></i>
+
+                <strong>Automatic calculation:</strong>
+
+                Regular hours, overtime, late minutes and
+                undertime minutes will be calculated automatically.
+
+            </div>
+
+
+            <hr class="my-4" />
+
+
+            <div class="d-flex flex-column
+                flex-sm-row
+                justify-content-end
+                gap-2">
+
+                <a asp-action="Index"
+                   class="btn btn-light">
+
+                    Cancel
+
+                </a>
+
+                <button type="submit"
+                        class="btn btn-primary">
+
+                    <i class="bi bi-check-lg me-1"></i>
+
+                    Save Attendance
+
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+
+@section Scripts {
+
+    <partial name="_ValidationScriptsPartial" />
+
+}

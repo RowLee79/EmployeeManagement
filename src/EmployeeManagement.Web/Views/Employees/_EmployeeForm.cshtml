@@ -1,0 +1,501 @@
+﻿@using EmployeeManagement.Application.Departments.Models
+@using EmployeeManagement.Application.Positions.Models
+@using EmployeeManagement.Domain.Enums
+@model EmployeeManagement.Web.Models.Employees.EmployeeEditViewModel
+
+@{
+    var departments =
+        ViewBag.Departments as IReadOnlyList<DepartmentLookup>
+        ?? Array.Empty<DepartmentLookup>();
+
+    var positions =
+        ViewBag.Positions as IReadOnlyList<PositionLookup>
+        ?? Array.Empty<PositionLookup>();
+}
+
+<!-- ============================================================
+     PERSONAL INFORMATION
+     ============================================================ -->
+
+<div class="card shadow-sm border-0 mb-4">
+
+    <div class="card-header bg-white py-3">
+
+        <h5 class="mb-0 fw-semibold">
+
+            <i class="bi bi-person me-2 text-primary"></i>
+
+            Personal Information
+
+        </h5>
+
+    </div>
+
+
+    <div class="card-body">
+
+        <div class="row g-3">
+
+            <!-- Employee Number -->
+            <div class="col-md-6">
+
+                <label asp-for="Employee.EmployeeNumber"
+                       class="form-label fw-semibold">
+                </label>
+
+                <input asp-for="Employee.EmployeeNumber"
+                       class="form-control"
+                       placeholder="Enter employee number" />
+
+                <span asp-validation-for="Employee.EmployeeNumber"
+                      class="text-danger">
+                </span>
+
+            </div>
+
+
+            <!-- First Name -->
+            <div class="col-md-6">
+
+                <label asp-for="Employee.FirstName"
+                       class="form-label fw-semibold">
+                </label>
+
+                <input asp-for="Employee.FirstName"
+                       class="form-control"
+                       placeholder="Enter first name" />
+
+                <span asp-validation-for="Employee.FirstName"
+                      class="text-danger">
+                </span>
+
+            </div>
+
+
+            <!-- Middle Name -->
+            <div class="col-md-6">
+
+                <label asp-for="Employee.MiddleName"
+                       class="form-label fw-semibold">
+                </label>
+
+                <input asp-for="Employee.MiddleName"
+                       class="form-control"
+                       placeholder="Enter middle name" />
+
+                <span asp-validation-for="Employee.MiddleName"
+                      class="text-danger">
+                </span>
+
+            </div>
+
+
+            <!-- Last Name -->
+            <div class="col-md-6">
+
+                <label asp-for="Employee.LastName"
+                       class="form-label fw-semibold">
+                </label>
+
+                <input asp-for="Employee.LastName"
+                       class="form-control"
+                       placeholder="Enter last name" />
+
+                <span asp-validation-for="Employee.LastName"
+                      class="text-danger">
+                </span>
+
+            </div>
+
+
+            <!-- Suffix -->
+            <div class="col-md-4">
+
+                <label asp-for="Employee.Suffix"
+                       class="form-label fw-semibold">
+                </label>
+
+                <input asp-for="Employee.Suffix"
+                       class="form-control"
+                       placeholder="Jr., Sr., III" />
+
+                <span asp-validation-for="Employee.Suffix"
+                      class="text-danger">
+                </span>
+
+            </div>
+
+
+            <!-- Birth Date -->
+            <div class="col-md-4">
+
+                <label asp-for="Employee.BirthDate"
+                       class="form-label fw-semibold">
+                </label>
+
+                <input asp-for="Employee.BirthDate"
+                       type="date"
+                       class="form-control" />
+
+                <span asp-validation-for="Employee.BirthDate"
+                      class="text-danger">
+                </span>
+
+            </div>
+
+
+            <!-- Gender -->
+            <div class="col-md-4">
+
+                <label asp-for="Employee.Gender"
+                       class="form-label fw-semibold">
+                </label>
+
+                <select asp-for="Employee.Gender"
+                        asp-items="Html.GetEnumSelectList<Gender>()"
+                        class="form-select">
+                </select>
+
+                <span asp-validation-for="Employee.Gender"
+                      class="text-danger">
+                </span>
+
+            </div>
+
+
+            <!-- Civil Status -->
+            <div class="col-md-4">
+
+                <label asp-for="Employee.CivilStatus"
+                       class="form-label fw-semibold">
+                </label>
+
+                <select asp-for="Employee.CivilStatus"
+                        asp-items="Html.GetEnumSelectList<CivilStatus>()"
+                        class="form-select">
+                </select>
+
+                <span asp-validation-for="Employee.CivilStatus"
+                      class="text-danger">
+                </span>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- ============================================================
+     CONTACT INFORMATION
+     ============================================================ -->
+
+<div class="card shadow-sm border-0 mb-4">
+
+    <div class="card-header bg-white py-3">
+
+        <h5 class="mb-0 fw-semibold">
+
+            <i class="bi bi-telephone me-2 text-primary"></i>
+
+            Contact Information
+
+        </h5>
+
+    </div>
+
+
+    <div class="card-body">
+
+        <div class="row g-3">
+
+            <!-- Email -->
+            <div class="col-md-6">
+
+                <label asp-for="Employee.Email"
+                       class="form-label fw-semibold">
+                </label>
+
+                <input asp-for="Employee.Email"
+                       type="email"
+                       class="form-control"
+                       placeholder="employee@example.com" />
+
+                <span asp-validation-for="Employee.Email"
+                      class="text-danger">
+                </span>
+
+            </div>
+
+
+            <!-- Phone -->
+            <div class="col-md-6">
+
+                <label asp-for="Employee.PhoneNumber"
+                       class="form-label fw-semibold">
+                </label>
+
+                <input asp-for="Employee.PhoneNumber"
+                       class="form-control"
+                       placeholder="+63 9XX XXX XXXX" />
+
+                <span asp-validation-for="Employee.PhoneNumber"
+                      class="text-danger">
+                </span>
+
+            </div>
+
+
+            <!-- Address -->
+            <div class="col-12">
+
+                <label asp-for="Employee.Address"
+                       class="form-label fw-semibold">
+                </label>
+
+                <textarea asp-for="Employee.Address"
+                          class="form-control"
+                          rows="3"
+                          placeholder="Enter complete address">
+                </textarea>
+
+                <span asp-validation-for="Employee.Address"
+                      class="text-danger">
+                </span>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- ============================================================
+     EMPLOYMENT INFORMATION
+     ============================================================ -->
+
+<div class="card shadow-sm border-0 mb-4">
+
+    <div class="card-header bg-white py-3">
+
+        <h5 class="mb-0 fw-semibold">
+
+            <i class="bi bi-briefcase me-2 text-primary"></i>
+
+            Employment Information
+
+        </h5>
+
+    </div>
+
+
+    <div class="card-body">
+
+        <div class="row g-3">
+
+            <!-- Department -->
+            <div class="col-md-6">
+
+                <label asp-for="Employee.DepartmentId"
+                       class="form-label fw-semibold">
+                </label>
+
+                <select asp-for="Employee.DepartmentId"
+                        class="form-select"
+                        id="DepartmentId">
+
+                    <option value="">
+                        Select department
+                    </option>
+
+                    @foreach (var department in departments)
+                    {
+                        <option value="@department.Id">
+
+                            @department.Name
+
+                        </option>
+                    }
+
+                </select>
+
+                <span asp-validation-for="Employee.DepartmentId"
+                      class="text-danger">
+                </span>
+
+            </div>
+
+
+            <!-- Position -->
+            <div class="col-md-6">
+
+                <label asp-for="Employee.PositionId"
+                       class="form-label fw-semibold">
+                </label>
+
+                <select asp-for="Employee.PositionId"
+                        class="form-select"
+                        id="PositionId">
+
+                    <option value="">
+                        Select position
+                    </option>
+
+                    @foreach (var position in positions)
+                    {
+                        <option value="@position.Id"
+                                data-department-id="@position.DepartmentId">
+
+                            @position.Name
+
+                        </option>
+                    }
+
+                </select>
+
+                <span asp-validation-for="Employee.PositionId"
+                      class="text-danger">
+                </span>
+
+            </div>
+
+
+            <!-- Hire Date -->
+            <div class="col-md-4">
+
+                <label asp-for="Employee.HireDate"
+                       class="form-label fw-semibold">
+                </label>
+
+                <input asp-for="Employee.HireDate"
+                       type="date"
+                       class="form-control" />
+
+                <span asp-validation-for="Employee.HireDate"
+                      class="text-danger">
+                </span>
+
+            </div>
+
+
+            <!-- Regularization Date -->
+            <div class="col-md-4">
+
+                <label asp-for="Employee.RegularizationDate"
+                       class="form-label fw-semibold">
+                </label>
+
+                <input asp-for="Employee.RegularizationDate"
+                       type="date"
+                       class="form-control" />
+
+                <span asp-validation-for="Employee.RegularizationDate"
+                      class="text-danger">
+                </span>
+
+            </div>
+
+
+            <!-- Employment Type -->
+            <div class="col-md-4">
+
+                <label asp-for="Employee.EmploymentType"
+                       class="form-label fw-semibold">
+                </label>
+
+                <select asp-for="Employee.EmploymentType"
+                        asp-items="Html.GetEnumSelectList<EmploymentType>()"
+                        class="form-select">
+                </select>
+
+                <span asp-validation-for="Employee.EmploymentType"
+                      class="text-danger">
+                </span>
+
+            </div>
+
+
+            <!-- Status -->
+            <div class="col-md-4">
+
+                <label asp-for="Employee.Status"
+                       class="form-label fw-semibold">
+                </label>
+
+                <select asp-for="Employee.Status"
+                        asp-items="Html.GetEnumSelectList<EmployeeStatus>()"
+                        class="form-select">
+                </select>
+
+                <span asp-validation-for="Employee.Status"
+                      class="text-danger">
+                </span>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- ============================================================
+     COMPENSATION
+     ============================================================ -->
+
+<div class="card shadow-sm border-0 mb-4">
+
+    <div class="card-header bg-white py-3">
+
+        <h5 class="mb-0 fw-semibold">
+
+            <i class="bi bi-cash-stack me-2 text-primary"></i>
+
+            Compensation
+
+        </h5>
+
+    </div>
+
+
+    <div class="card-body">
+
+        <div class="row g-3">
+
+            <div class="col-md-6">
+
+                <label asp-for="Employee.BasicSalary"
+                       class="form-label fw-semibold">
+                </label>
+
+                <div class="input-group">
+
+                    <span class="input-group-text">
+                        ₱
+                    </span>
+
+                    <input asp-for="Employee.BasicSalary"
+                           type="number"
+                           step="0.01"
+                           min="0"
+                           class="form-control"
+                           placeholder="0.00" />
+
+                </div>
+
+                <span asp-validation-for="Employee.BasicSalary"
+                      class="text-danger">
+                </span>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>

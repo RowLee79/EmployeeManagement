@@ -1,0 +1,162 @@
+@using EmployeeManagement.Application.Payroll.Models
+
+@model IReadOnlyList<PayrollListModel>
+
+@{
+    ViewData["Title"] = "Employee Payroll History";
+
+    var employee =
+        Model.First();
+}
+
+<div class="container-fluid">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+
+        <div>
+
+            <h1 class="h3 mb-1">
+                Payroll History
+            </h1>
+
+            <p class="text-muted mb-0">
+
+                @employee.EmployeeNumber -
+                @employee.EmployeeName
+
+            </p>
+
+        </div>
+
+        <a asp-action="Index"
+           class="btn btn-outline-secondary">
+
+            <i class="bi bi-arrow-left"></i>
+            Back to Payroll
+
+        </a>
+
+    </div>
+
+
+    <div class="card shadow-sm">
+
+        <div class="card-header bg-white">
+
+            <h5 class="mb-0">
+                Payroll History
+            </h5>
+
+        </div>
+
+        <div class="table-responsive">
+
+            <table class="table table-hover mb-0">
+
+                <thead class="table-light">
+
+                    <tr>
+
+                        <th>
+                            Payroll Date
+                        </th>
+
+                        <th class="text-end">
+                            Basic Salary
+                        </th>
+
+                        <th class="text-end">
+                            Overtime
+                        </th>
+
+                        <th class="text-end">
+                            Allowances
+                        </th>
+
+                        <th class="text-end">
+                            Gross
+                        </th>
+
+                        <th class="text-end">
+                            Deductions
+                        </th>
+
+                        <th class="text-end">
+                            Net
+                        </th>
+
+                        <th>
+                            Status
+                        </th>
+
+                        <th>
+                        </th>
+
+                    </tr>
+
+                </thead>
+
+                <tbody>
+
+                @foreach (var payroll in Model)
+                {
+                    <tr>
+
+                        <td>
+                            @payroll.PayrollDate.ToString("dd-MMM-yyyy")
+                        </td>
+
+                        <td class="text-end">
+                            ₱@payroll.BasicSalary.ToString("N2")
+                        </td>
+
+                        <td class="text-end">
+                            ₱@payroll.Overtime.ToString("N2")
+                        </td>
+
+                        <td class="text-end">
+                            ₱@payroll.Allowances.ToString("N2")
+                        </td>
+
+                        <td class="text-end fw-semibold">
+                            ₱@payroll.GrossSalary.ToString("N2")
+                        </td>
+
+                        <td class="text-end">
+                            ₱@payroll.Deductions.ToString("N2")
+                        </td>
+
+                        <td class="text-end fw-bold">
+                            ₱@payroll.NetSalary.ToString("N2")
+                        </td>
+
+                        <td>
+                            <span class="badge bg-secondary">
+                                @payroll.Status
+                            </span>
+                        </td>
+
+                        <td>
+
+                            <a asp-action="Details"
+                               asp-route-id="@payroll.Id"
+                               class="btn btn-sm btn-outline-primary">
+
+                                <i class="bi bi-eye"></i>
+
+                            </a>
+
+                        </td>
+
+                    </tr>
+                }
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+</div>

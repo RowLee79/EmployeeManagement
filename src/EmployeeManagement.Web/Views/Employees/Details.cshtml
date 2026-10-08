@@ -1,0 +1,740 @@
+@using EmployeeManagement.Domain.Enums
+@model EmployeeManagement.Application.Employees.Models.EmployeeDetailsModel
+
+@{
+    ViewData["Title"] = "Employee Details";
+
+    var profileImage = string.IsNullOrWhiteSpace(Model.ProfileImage)
+        ? Url.Content("~/images/default-avatar.svg")
+        : Model.ProfileImage;
+}
+
+<partial name="_Notifications" />
+<div class="container-fluid">
+
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+
+        <div>
+            <h2 class="mb-1">Employee Details</h2>
+            <p class="text-muted mb-0">
+                View employee profile and employment information
+            </p>
+        </div>
+
+        <div class="d-flex gap-2">
+
+            <a asp-action="Index"
+               class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-1"></i>
+                Back
+            </a>
+
+            <a asp-action="Edit"
+               asp-route-id="@Model.Id"
+               class="btn btn-primary">
+                <i class="bi bi-pencil me-1"></i>
+                Edit Employee
+            </a>
+
+        </div>
+
+    </div>
+
+
+    <!-- Employee Profile -->
+    <div class="card border-0 shadow-sm mb-4">
+
+        <div class="card-body p-4">
+
+            <div class="row align-items-center">
+
+                <!-- Profile Image -->
+                <div class="col-auto">
+
+                    <img src="@profileImage"
+                         alt="@Model.FullName"
+                         class="rounded-circle border shadow-sm"
+                         style="width:120px;height:120px;object-fit:cover;" />
+
+                </div>
+
+
+                <!-- Employee Summary -->
+                <div class="col">
+
+                    <div class="d-flex align-items-center gap-2 mb-1">
+
+                        <h3 class="mb-0">
+                            @Model.FullName
+                        </h3>
+
+                        @if (Model.Status == EmployeeStatus.Active)
+                        {
+                            <span class="badge bg-success">
+                                Active
+                            </span>
+                        }
+                        else if (Model.Status == EmployeeStatus.Inactive)
+                        {
+                            <span class="badge bg-secondary">
+                                Inactive
+                            </span>
+                        }
+                        else if (Model.Status == EmployeeStatus.OnLeave)
+                        {
+                            <span class="badge bg-warning text-dark">
+                                On Leave
+                            </span>
+                        }
+                        else if (Model.Status == EmployeeStatus.Resigned)
+                        {
+                            <span class="badge bg-info text-dark">
+                                Resigned
+                            </span>
+                        }
+                        else if (Model.Status == EmployeeStatus.Terminated)
+                        {
+                            <span class="badge bg-danger">
+                                Terminated
+                            </span>
+                        }
+
+                    </div>
+
+                    <div class="text-muted mb-2">
+                        <i class="bi bi-person-badge me-1"></i>
+                        @Model.EmployeeNumber
+                    </div>
+
+                    <div class="fw-semibold">
+                        <i class="bi bi-briefcase me-1"></i>
+                        @Model.PositionName
+                    </div>
+
+                    <div class="text-muted">
+                        <i class="bi bi-building me-1"></i>
+                        @Model.DepartmentName
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- Information Cards -->
+    <div class="row g-4">
+
+
+        <!-- Personal Information -->
+        <div class="col-xl-6">
+
+            <div class="card border-0 shadow-sm h-100">
+
+                <div class="card-header bg-white border-0 pt-4 px-4">
+
+                    <h5 class="mb-0">
+                        <i class="bi bi-person me-2 text-primary"></i>
+                        Personal Information
+                    </h5>
+
+                </div>
+
+                <div class="card-body px-4">
+
+                    <div class="row g-4">
+
+                        <div class="col-md-6">
+
+                            <div class="text-muted small mb-1">
+                                First Name
+                            </div>
+
+                            <div class="fw-semibold">
+                                @Model.FirstName
+                            </div>
+
+                        </div>
+
+
+                        <div class="col-md-6">
+
+                            <div class="text-muted small mb-1">
+                                Middle Name
+                            </div>
+
+                            <div class="fw-semibold">
+
+                                @if (string.IsNullOrWhiteSpace(Model.MiddleName))
+                                {
+                                    <span>N/A</span>
+                                }
+                                else
+                                {
+                                    @Model.MiddleName
+                                }
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="col-md-6">
+
+                            <div class="text-muted small mb-1">
+                                Last Name
+                            </div>
+
+                            <div class="fw-semibold">
+                                @Model.LastName
+                            </div>
+
+                        </div>
+
+
+                        <div class="col-md-6">
+
+                            <div class="text-muted small mb-1">
+                                Suffix
+                            </div>
+
+                            <div class="fw-semibold">
+
+                                @if (string.IsNullOrWhiteSpace(Model.Suffix))
+                                {
+                                    <span>N/A</span>
+                                }
+                                else
+                                {
+                                    @Model.Suffix
+                                }
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="col-md-6">
+
+                            <div class="text-muted small mb-1">
+                                Birth Date
+                            </div>
+
+                            <div class="fw-semibold">
+                                @Model.BirthDate.ToString("dd-MMM-yyyy")
+                            </div>
+
+                        </div>
+
+
+                        <div class="col-md-6">
+
+                            <div class="text-muted small mb-1">
+                                Gender
+                            </div>
+
+                            <div class="fw-semibold">
+                                @Model.Gender
+                            </div>
+
+                        </div>
+
+
+                        <div class="col-md-6">
+
+                            <div class="text-muted small mb-1">
+                                Civil Status
+                            </div>
+
+                            <div class="fw-semibold">
+                                @Model.CivilStatus
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- Employment Information -->
+        <div class="col-xl-6">
+
+            <div class="card border-0 shadow-sm h-100">
+
+                <div class="card-header bg-white border-0 pt-4 px-4">
+
+                    <h5 class="mb-0">
+                        <i class="bi bi-briefcase me-2 text-primary"></i>
+                        Employment Information
+                    </h5>
+
+                </div>
+
+                <div class="card-body px-4">
+
+                    <div class="row g-4">
+
+                        <div class="col-md-6">
+
+                            <div class="text-muted small mb-1">
+                                Employee Number
+                            </div>
+
+                            <div class="fw-semibold">
+                                @Model.EmployeeNumber
+                            </div>
+
+                        </div>
+
+
+                        <div class="col-md-6">
+
+                            <div class="text-muted small mb-1">
+                                Department
+                            </div>
+
+                            <div class="fw-semibold">
+                                @Model.DepartmentName
+                            </div>
+
+                        </div>
+
+
+                        <div class="col-md-6">
+
+                            <div class="text-muted small mb-1">
+                                Position
+                            </div>
+
+                            <div class="fw-semibold">
+                                @Model.PositionName
+                            </div>
+
+                        </div>
+
+
+                        <div class="col-md-6">
+
+                            <div class="text-muted small mb-1">
+                                Employment Type
+                            </div>
+
+                            <div class="fw-semibold">
+                                @Model.EmploymentType
+                            </div>
+
+                        </div>
+
+
+                        <div class="col-md-6">
+
+                            <div class="text-muted small mb-1">
+                                Hire Date
+                            </div>
+
+                            <div class="fw-semibold">
+                                @Model.HireDate.ToString("dd-MMM-yyyy")
+                            </div>
+
+                        </div>
+
+
+                        <div class="col-md-6">
+
+                            <div class="text-muted small mb-1">
+                                Regularization Date
+                            </div>
+
+                            <div class="fw-semibold">
+
+                                @if (Model.RegularizationDate.HasValue)
+                                {
+                                    @Model.RegularizationDate.Value.ToString("dd-MMM-yyyy")
+                                }
+                                else
+                                {
+                                    <span>N/A</span>
+                                }
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="col-md-6">
+
+                            <div class="text-muted small mb-1">
+                                Status
+                            </div>
+
+                            <div>
+
+                                @if (Model.Status == EmployeeStatus.Active)
+                                {
+                                    <span class="badge bg-success">
+                                        Active
+                                    </span>
+                                }
+                                else if (Model.Status == EmployeeStatus.Inactive)
+                                {
+                                    <span class="badge bg-secondary">
+                                        Inactive
+                                    </span>
+                                }
+                                else if (Model.Status == EmployeeStatus.OnLeave)
+                                {
+                                    <span class="badge bg-warning text-dark">
+                                        On Leave
+                                    </span>
+                                }
+                                else if (Model.Status == EmployeeStatus.Resigned)
+                                {
+                                    <span class="badge bg-info text-dark">
+                                        Resigned
+                                    </span>
+                                }
+                                else if (Model.Status == EmployeeStatus.Terminated)
+                                {
+                                    <span class="badge bg-danger">
+                                        Terminated
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-light text-dark">
+                                        N/A
+                                    </span>
+                                }
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- Contact Information -->
+        <div class="col-xl-6">
+
+            <div class="card border-0 shadow-sm h-100">
+
+                <div class="card-header bg-white border-0 pt-4 px-4">
+
+                    <h5 class="mb-0">
+                        <i class="bi bi-telephone me-2 text-primary"></i>
+                        Contact Information
+                    </h5>
+
+                </div>
+
+                <div class="card-body px-4">
+
+                    <div class="row g-4">
+
+                        <div class="col-12">
+
+                            <div class="text-muted small mb-1">
+                                Email
+                            </div>
+
+                            @if (string.IsNullOrWhiteSpace(Model.Email))
+                            {
+                                <div class="fw-semibold">
+                                    N/A
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="fw-semibold">
+
+                                    <a href="mailto:@Model.Email"
+                                       class="text-decoration-none">
+
+                                        <i class="bi bi-envelope me-1"></i>
+
+                                        @Model.Email
+
+                                    </a>
+
+                                </div>
+                            }
+
+                        </div>
+
+
+                        <div class="col-md-6">
+
+                            <div class="text-muted small mb-1">
+                                Phone Number
+                            </div>
+
+                            @if (string.IsNullOrWhiteSpace(Model.PhoneNumber))
+                            {
+                                <div class="fw-semibold">
+                                    N/A
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="fw-semibold">
+
+                                    <a href="tel:@Model.PhoneNumber"
+                                       class="text-decoration-none">
+
+                                        <i class="bi bi-telephone me-1"></i>
+
+                                        @Model.PhoneNumber
+
+                                    </a>
+
+                                </div>
+                            }
+
+                        </div>
+
+
+                        <div class="col-12">
+
+                            <div class="text-muted small mb-1">
+                                Address
+                            </div>
+
+                            @if (string.IsNullOrWhiteSpace(Model.Address))
+                            {
+                                <div class="fw-semibold">
+                                    N/A
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="fw-semibold">
+                                    @Model.Address
+                                </div>
+                            }
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- Compensation -->
+        <div class="col-xl-6">
+
+            <div class="card border-0 shadow-sm h-100">
+
+                <div class="card-header bg-white border-0 pt-4 px-4">
+
+                    <h5 class="mb-0">
+                        <i class="bi bi-cash-stack me-2 text-primary"></i>
+                        Compensation
+                    </h5>
+
+                </div>
+
+                <div class="card-body px-4">
+
+                    <div class="row g-4">
+
+                        <div class="col-12">
+
+                            <div class="text-muted small mb-1">
+                                Basic Salary
+                            </div>
+
+                            <div class="display-6 fw-bold text-success">
+                                ₱@Model.BasicSalary.ToString("N2")
+                            </div>
+
+                        </div>
+
+
+                        <div class="col-md-6">
+
+                            <div class="text-muted small mb-1">
+                                Employment Type
+                            </div>
+
+                            <div class="fw-semibold">
+                                @Model.EmploymentType
+                            </div>
+
+                        </div>
+
+
+                        <div class="col-md-6">
+
+                            <div class="text-muted small mb-1">
+                                Hire Date
+                            </div>
+
+                            <div class="fw-semibold">
+                                @Model.HireDate.ToString("dd-MMM-yyyy")
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- Bottom Actions -->
+    <div class="d-flex justify-content-end gap-2 mt-4 mb-4">
+
+        <a asp-action="Index"
+           class="btn btn-outline-secondary">
+
+            <i class="bi bi-arrow-left me-1"></i>
+
+            Back to Employees
+
+        </a>
+
+        <a asp-action="Edit"
+           asp-route-id="@Model.Id"
+           class="btn btn-primary">
+
+            <i class="bi bi-pencil me-1"></i>
+
+            Edit Employee
+
+        </a>
+
+    </div>
+
+
+  <!-- Audit Information -->
+<div class="card border-0 shadow-sm mt-4">
+
+    <div class="card-header bg-white">
+
+        <h5 class="mb-0 fw-bold">
+            <i class="bi bi-clock-history"></i>
+            Audit Information
+        </h5>
+
+    </div>
+
+    <div class="card-body">
+
+        <div class="row g-4">
+
+            <!-- Created -->
+            <div class="col-md-4">
+
+                <div class="text-muted small mb-1">
+                    Created By
+                </div>
+
+                <div class="fw-semibold">
+                    @(string.IsNullOrWhiteSpace(Model.CreatedBy)
+                        ? "N/A"
+                        : Model.CreatedBy)
+                </div>
+
+                @if (Model.CreatedDate != DateTime.MinValue)
+                {
+                    <div class="small text-muted mt-1">
+                        @Model.CreatedDate.ToLocalTime().ToString("dd-MMM-yyyy hh:mm tt")
+                    </div>
+                }
+                else
+                {
+                    <div class="small text-muted mt-1">
+                        Date not available
+                    </div>
+                }
+
+            </div>
+
+
+            <!-- Updated -->
+            <div class="col-md-4">
+
+                <div class="text-muted small mb-1">
+                    Last Updated By
+                </div>
+
+                <div class="fw-semibold">
+                    @(string.IsNullOrWhiteSpace(Model.UpdatedBy)
+                        ? "N/A"
+                        : Model.UpdatedBy)
+                </div>
+
+                @if (Model.UpdatedDate.HasValue)
+                {
+                    <div class="small text-muted mt-1">
+                        @Model.UpdatedDate.Value.ToLocalTime().ToString("dd-MMM-yyyy hh:mm tt")
+                    </div>
+                }
+                else
+                {
+                    <div class="small text-muted mt-1">
+                        Never updated
+                    </div>
+                }
+
+            </div>
+
+
+            <!-- Deleted -->
+            <div class="col-md-4">
+
+                <div class="text-muted small mb-1">
+                    Deleted By
+                </div>
+
+                <div class="fw-semibold">
+                    @(string.IsNullOrWhiteSpace(Model.DeletedBy)
+                        ? "N/A"
+                        : Model.DeletedBy)
+                </div>
+
+                @if (Model.DeletedDate.HasValue)
+                {
+                    <div class="small text-muted mt-1">
+                        @Model.DeletedDate.Value.ToLocalTime().ToString("dd-MMM-yyyy hh:mm tt")
+                    </div>
+                }
+                else
+                {
+                    <div class="small text-muted mt-1">
+                        Not deleted
+                    </div>
+                }
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+</div>

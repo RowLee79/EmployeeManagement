@@ -1,0 +1,12 @@
+{
+  "name": "employee-management-ui-screenshots",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "capture": "node capture.mjs",
+    "gallery": "node update-readme.mjs"
+  },
+  "devDependencies": {
+    "playwright": "latest"
+  }
+}

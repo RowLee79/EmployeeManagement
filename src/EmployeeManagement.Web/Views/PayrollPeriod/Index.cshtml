@@ -1,0 +1,1257 @@
+@using EmployeeManagement.Application.Payroll
+@using EmployeeManagement.Application.Payroll.Models
+
+@model PayrollIndexViewModel
+
+@{
+    ViewData["Title"] = "Payroll";
+
+    var totalPages =
+        Model.Payrolls.PageSize > 0
+            ? (int)Math.Ceiling(
+                (double)Model.Payrolls.TotalCount /
+                Model.Payrolls.PageSize)
+            : 0;
+
+    var hasPreviousPage =
+        Model.Payrolls.PageNumber > 1;
+
+    var hasNextPage =
+        Model.Payrolls.PageNumber < totalPages;
+
+    var firstItem =
+        Model.Payrolls.TotalCount == 0
+            ? 0
+            : ((Model.Payrolls.PageNumber - 1)
+                * Model.Payrolls.PageSize) + 1;
+
+    var lastItem =
+        Math.Min(
+            Model.Payrolls.PageNumber *
+            Model.Payrolls.PageSize,
+            Model.Payrolls.TotalCount);
+}
+
+<div class="container-fluid">
+
+    <!-- ========================================================= -->
+    <!-- PAGE HEADER -->
+    <!-- ========================================================= -->
+
+    <div class="d-flex flex-wrap justify-content-between
+        align-items-center mb-4">
+
+        <div>
+            <h2 class="mb-1">
+                <i class="bi bi-cash-stack me-2"></i>
+                Payroll
+            </h2>
+
+            <div class="text-muted">
+                Manage employee payroll, deductions, approvals,
+                and payslips.
+            </div>
+        </div>
+
+        <div class="mt-3 mt-md-0">
+
+            <a asp-action="Create"
+               class="btn btn-primary">
+
+                <i class="bi bi-plus-circle me-1"></i>
+                Create Payroll
+
+            </a>
+
+        </div>
+
+    </div>
+
+
+    <!-- ========================================================= -->
+    <!-- SUCCESS / ERROR MESSAGE -->
+    <!-- ========================================================= -->
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show"
+             role="alert">
+
+            <i class="bi bi-check-circle me-2"></i>
+
+            @TempData["Success"]
+
+            <button type="button"
+                    class="btn-close"
+                    data-bs-dismiss="alert">
+            </button>
+
+        </div>
+    }
+
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show"
+             role="alert">
+
+            <i class="bi bi-exclamation-triangle me-2"></i>
+
+            @TempData["Error"]
+
+            <button type="button"
+                    class="btn-close"
+                    data-bs-dismiss="alert">
+            </button>
+
+        </div>
+    }
+
+
+    <!-- ========================================================= -->
+    <!-- DASHBOARD -->
+    <!-- ========================================================= -->
+
+    <div class="row g-4 mb-4">
+
+        <!-- Total Payrolls -->
+
+        <div class="col-md-6 col-xl-3">
+
+            <div class="card shadow-sm h-100">
+
+                <div class="card-body">
+
+                    <div class="d-flex
+                        justify-content-between
+                        align-items-center">
+
+                        <div>
+
+                            <div class="text-muted small">
+                                Total Payrolls
+                            </div>
+
+                            <div class="fs-3 fw-bold">
+                                @Model.Dashboard.TotalPayrolls
+                            </div>
+
+                        </div>
+
+                        <div class="fs-2 text-primary">
+                            <i class="bi bi-receipt"></i>
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- Draft -->
+
+        <div class="col-md-6 col-xl-3">
+
+            <div class="card shadow-sm h-100">
+
+                <div class="card-body">
+
+                    <div class="d-flex
+                        justify-content-between
+                        align-items-center">
+
+                        <div>
+
+                            <div class="text-muted small">
+                                Draft
+                            </div>
+
+                            <div class="fs-3 fw-bold">
+                                @Model.Dashboard.DraftCount
+                            </div>
+
+                        </div>
+
+                        <div class="fs-2 text-secondary">
+                            <i class="bi bi-file-earmark"></i>
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- Calculated -->
+
+        <div class="col-md-6 col-xl-3">
+
+            <div class="card shadow-sm h-100">
+
+                <div class="card-body">
+
+                    <div class="d-flex
+                        justify-content-between
+                        align-items-center">
+
+                        <div>
+
+                            <div class="text-muted small">
+                                Calculated
+                            </div>
+
+                            <div class="fs-3 fw-bold">
+                                @Model.Dashboard.CalculatedCount
+                            </div>
+
+                        </div>
+
+                        <div class="fs-2 text-warning">
+                            <i class="bi bi-calculator"></i>
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- Approved -->
+
+        <div class="col-md-6 col-xl-3">
+
+            <div class="card shadow-sm h-100">
+
+                <div class="card-body">
+
+                    <div class="d-flex
+                        justify-content-between
+                        align-items-center">
+
+                        <div>
+
+                            <div class="text-muted small">
+                                Approved
+                            </div>
+
+                            <div class="fs-3 fw-bold">
+                                @Model.Dashboard.ApprovedCount
+                            </div>
+
+                        </div>
+
+                        <div class="fs-2 text-info">
+                            <i class="bi bi-check-circle"></i>
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- Finalized -->
+
+        <div class="col-md-6 col-xl-3">
+
+            <div class="card shadow-sm h-100">
+
+                <div class="card-body">
+
+                    <div class="d-flex
+                        justify-content-between
+                        align-items-center">
+
+                        <div>
+
+                            <div class="text-muted small">
+                                Finalized
+                            </div>
+
+                            <div class="fs-3 fw-bold">
+                                @Model.Dashboard.FinalizedCount
+                            </div>
+
+                        </div>
+
+                        <div class="fs-2 text-success">
+                            <i class="bi bi-check2-all"></i>
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- Cancelled -->
+
+        <div class="col-md-6 col-xl-3">
+
+            <div class="card shadow-sm h-100">
+
+                <div class="card-body">
+
+                    <div class="d-flex
+                        justify-content-between
+                        align-items-center">
+
+                        <div>
+
+                            <div class="text-muted small">
+                                Cancelled
+                            </div>
+
+                            <div class="fs-3 fw-bold">
+                                @Model.Dashboard.CancelledCount
+                            </div>
+
+                        </div>
+
+                        <div class="fs-2 text-danger">
+                            <i class="bi bi-x-circle"></i>
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- Gross Salary -->
+
+        <div class="col-md-6 col-xl-3">
+
+            <div class="card shadow-sm h-100">
+
+                <div class="card-body">
+
+                    <div class="text-muted small">
+                        Total Gross Salary
+                    </div>
+
+                    <div class="fs-4 fw-bold">
+                        ₱@Model.Dashboard.TotalGrossSalary.ToString("N2")
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- Deductions -->
+
+        <div class="col-md-6 col-xl-3">
+
+            <div class="card shadow-sm h-100">
+
+                <div class="card-body">
+
+                    <div class="text-muted small">
+                        Total Deductions
+                    </div>
+
+                    <div class="fs-4 fw-bold">
+                        ₱@Model.Dashboard.TotalDeductions.ToString("N2")
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- Net Salary -->
+
+        <div class="col-md-6 col-xl-3">
+
+            <div class="card shadow-sm h-100">
+
+                <div class="card-body">
+
+                    <div class="text-muted small">
+                        Total Net Salary
+                    </div>
+
+                    <div class="fs-4 fw-bold">
+                        ₱@Model.Dashboard.TotalNetSalary.ToString("N2")
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ========================================================= -->
+    <!-- SEARCH / FILTER -->
+    <!-- ========================================================= -->
+
+    <div class="card shadow-sm mb-4">
+
+        <div class="card-header bg-white">
+
+            <h5 class="mb-0">
+                <i class="bi bi-funnel me-2"></i>
+                Search & Filter
+            </h5>
+
+        </div>
+
+        <div class="card-body">
+
+            <form asp-action="Index"
+                  method="get">
+
+                <div class="row g-3">
+
+                    <!-- Search -->
+
+                    <div class="col-md-6 col-lg-3">
+
+                        <label asp-for="Search"
+                               class="form-label">
+                            Search
+                        </label>
+
+                        <input asp-for="Search"
+                               class="form-control"
+                               placeholder="Employee number or name..." />
+
+                    </div>
+
+
+                    <!-- Status -->
+
+                    <div class="col-md-6 col-lg-2">
+
+                        <label asp-for="Status"
+                               class="form-label">
+                            Status
+                        </label>
+
+                        <select asp-for="Status"
+                                class="form-select">
+
+                            <option value="">
+                                All Statuses
+                            </option>
+
+                            <option value="@PayrollStatuses.Draft">
+                                Draft
+                            </option>
+
+                            <option value="@PayrollStatuses.Calculated">
+                                Calculated
+                            </option>
+
+                            <option value="@PayrollStatuses.Approved">
+                                Approved
+                            </option>
+
+                            <option value="@PayrollStatuses.Finalized">
+                                Finalized
+                            </option>
+
+                            <option value="@PayrollStatuses.Cancelled">
+                                Cancelled
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+                    <!-- Date From -->
+
+                    <div class="col-md-6 col-lg-2">
+
+                        <label asp-for="PayrollDateFrom"
+                               class="form-label">
+                            Payroll Date From
+                        </label>
+
+                        <input asp-for="PayrollDateFrom"
+                               type="date"
+                               class="form-control" />
+
+                    </div>
+
+
+                    <!-- Date To -->
+
+                    <div class="col-md-6 col-lg-2">
+
+                        <label asp-for="PayrollDateTo"
+                               class="form-label">
+                            Payroll Date To
+                        </label>
+
+                        <input asp-for="PayrollDateTo"
+                               type="date"
+                               class="form-control" />
+
+                    </div>
+
+
+                    <!-- Page Size -->
+
+                    <div class="col-md-6 col-lg-1">
+
+                        <label asp-for="PageSize"
+                               class="form-label">
+                            Page Size
+                        </label>
+
+                        <select asp-for="PageSize"
+                                class="form-select">
+
+                            <option value="10">
+                                10
+                            </option>
+
+                            <option value="25">
+                                25
+                            </option>
+
+                            <option value="50">
+                                50
+                            </option>
+
+                            <option value="100">
+                                100
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+                    <!-- Buttons -->
+
+                    <div class="col-md-6 col-lg-2
+                        d-flex align-items-end">
+
+                        <div class="d-flex gap-2 w-100">
+
+                            <button type="submit"
+                                    class="btn btn-primary">
+
+                                <i class="bi bi-search me-1"></i>
+                                Search
+
+                            </button>
+
+                            <a asp-action="Index"
+                               class="btn btn-outline-secondary">
+
+                                <i class="bi bi-arrow-counterclockwise"></i>
+
+                            </a>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+
+    <!-- ========================================================= -->
+    <!-- PAYROLL TABLE -->
+    <!-- ========================================================= -->
+
+    <div class="card shadow-sm">
+
+        <div class="card-header bg-white">
+
+            <div class="d-flex
+                justify-content-between
+                align-items-center">
+
+                <h5 class="mb-0">
+
+                    <i class="bi bi-table me-2"></i>
+
+                    Payroll Records
+
+                </h5>
+
+                <span class="text-muted">
+
+                    @Model.Payrolls.TotalCount
+                    record(s)
+
+                </span>
+
+            </div>
+
+        </div>
+
+
+        <div class="card-body p-0">
+
+            <div class="table-responsive">
+
+                <table class="table table-hover
+                    table-striped
+                    align-middle mb-0">
+
+                    <thead class="table-light">
+
+                        <tr>
+
+                            <th>
+                                Employee
+                            </th>
+
+                            <th>
+                                Payroll Date
+                            </th>
+
+                            <th class="text-end">
+                                Basic Salary
+                            </th>
+
+                            <th class="text-end">
+                                Overtime
+                            </th>
+
+                            <th class="text-end">
+                                Allowances
+                            </th>
+
+                            <th class="text-end">
+                                Gross Salary
+                            </th>
+
+                            <th class="text-end">
+                                Deductions
+                            </th>
+
+                            <th class="text-end">
+                                Net Salary
+                            </th>
+
+                            <th>
+                                Status
+                            </th>
+
+                            <th class="text-end">
+                                Actions
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody>
+
+                        @if (Model.Payrolls.Items.Any())
+                        {
+                            foreach (var payroll
+                                in Model.Payrolls.Items)
+                            {
+                                var statusClass =
+                                    payroll.Status switch
+                                    {
+                                        PayrollStatuses.Draft
+                                            => "bg-secondary",
+
+                                        PayrollStatuses.Calculated
+                                            => "bg-warning text-dark",
+
+                                        PayrollStatuses.Approved
+                                            => "bg-info text-dark",
+
+                                        PayrollStatuses.Finalized
+                                            => "bg-success",
+
+                                        PayrollStatuses.Cancelled
+                                            => "bg-danger",
+
+                                        _ => "bg-light text-dark"
+                                    };
+
+
+                                <tr>
+
+                                    <!-- Employee -->
+
+                                    <td>
+
+                                        <div class="fw-semibold">
+
+                                            @payroll.EmployeeName
+
+                                        </div>
+
+                                        <div class="small text-muted">
+
+                                            @payroll.EmployeeNumber
+
+                                        </div>
+
+                                    </td>
+
+
+                                    <!-- Payroll Date -->
+
+                                    <td>
+                                        @payroll.PayrollDate
+                                        .ToString("dd-MMM-yyyy")
+                                    </td>
+
+
+                                    <!-- Basic Salary -->
+
+                                    <td class="text-end">
+                                        ₱@payroll.BasicSalary
+                                        .ToString("N2")
+                                    </td>
+
+
+                                    <!-- Overtime -->
+
+                                    <td class="text-end">
+                                        ₱@payroll.Overtime
+                                        .ToString("N2")
+                                    </td>
+
+
+                                    <!-- Allowances -->
+
+                                    <td class="text-end">
+                                        ₱@payroll.Allowances
+                                        .ToString("N2")
+                                    </td>
+
+
+                                    <!-- Gross -->
+
+                                    <td class="text-end fw-semibold">
+                                        ₱@payroll.GrossSalary
+                                        .ToString("N2")
+                                    </td>
+
+
+                                    <!-- Deductions -->
+
+                                    <td class="text-end text-danger">
+                                        ₱@payroll.Deductions
+                                        .ToString("N2")
+                                    </td>
+
+
+                                    <!-- Net -->
+
+                                    <td class="text-end fw-bold">
+                                        ₱@payroll.NetSalary
+                                        .ToString("N2")
+                                    </td>
+
+
+                                    <!-- Status -->
+
+                                    <td>
+
+                                        <span class="badge @statusClass">
+
+                                            @payroll.Status
+
+                                        </span>
+
+                                    </td>
+
+
+                                    <!-- Actions -->
+
+                                    <td class="text-end">
+
+                                        <div class="dropdown">
+
+                                            <button class="btn btn-sm
+                                                btn-outline-secondary
+                                                dropdown-toggle"
+                                                    type="button"
+                                                    data-bs-toggle="dropdown">
+
+                                                Actions
+
+                                            </button>
+
+                                            <ul class="dropdown-menu
+                                                dropdown-menu-end">
+
+                                                <!-- Details -->
+
+                                                <li>
+
+                                                    <a class="dropdown-item"
+                                                       asp-action="Details"
+                                                       asp-route-id="@payroll.Id">
+
+                                                        <i class="bi bi-eye me-2"></i>
+
+                                                        Details
+
+                                                    </a>
+
+                                                </li>
+
+
+                                                <!-- Edit -->
+                                                @if (payroll.Status ==
+                                                                                                     PayrollStatuses.Draft)
+                                                {
+                                                    <li>
+
+                                                        <a class="dropdown-item"
+                                                           asp-action="Edit"
+                                                           asp-route-id="@payroll.Id">
+
+                                                            <i class="bi bi-pencil me-2"></i>
+
+                                                            Edit
+
+                                                        </a>
+
+                                                    </li>
+                                                }
+
+
+                                                <!-- Calculate -->
+                                                @if (payroll.Status ==
+                                                                                                     PayrollStatuses.Draft)
+                                                {
+                                                    <li>
+
+                                                        <form asp-action="Calculate"
+                                                              asp-route-id="@payroll.Id"
+                                                              method="post">
+
+                                                            @Html.AntiForgeryToken()
+
+                                                            <button type="submit"
+                                                                    class="dropdown-item"
+                                                                    onclick="return confirm(
+                                                                'Calculate this payroll?');">
+
+                                                                <i class="bi bi-calculator me-2"></i>
+
+                                                                Calculate
+
+                                                            </button>
+
+                                                        </form>
+
+                                                    </li>
+                                                }
+
+
+                                                <!-- Approve -->
+                                                @if (payroll.Status ==
+                                                                                                     PayrollStatuses.Calculated)
+                                                {
+                                                    <li>
+
+                                                        <form asp-action="Approve"
+                                                              asp-route-id="@payroll.Id"
+                                                              method="post">
+
+                                                            @Html.AntiForgeryToken()
+
+                                                            <button type="submit"
+                                                                    class="dropdown-item"
+                                                                    onclick="return confirm(
+                                                                'Approve this payroll?');">
+
+                                                                <i class="bi bi-check-circle me-2"></i>
+
+                                                                Approve
+
+                                                            </button>
+
+                                                        </form>
+
+                                                    </li>
+                                                }
+
+
+                                                <!-- Finalize -->
+                                                @if (payroll.Status ==
+                                                                                                     PayrollStatuses.Approved)
+                                                {
+                                                    <li>
+
+                                                        <form asp-action="Finalize"
+                                                              asp-route-id="@payroll.Id"
+                                                              method="post">
+
+                                                            @Html.AntiForgeryToken()
+
+                                                            <button type="submit"
+                                                                    class="dropdown-item"
+                                                                    onclick="return confirm(
+                                                                'Finalize this payroll?');">
+
+                                                                <i class="bi bi-check2-all me-2"></i>
+
+                                                                Finalize
+
+                                                            </button>
+
+                                                        </form>
+
+                                                    </li>
+                                                }
+
+
+                                                <!-- Payslip -->
+                                                @if (payroll.Status ==
+                                                                                                         PayrollStatuses.Approved
+                                                                                                     ||
+                                                                                                     payroll.Status ==
+                                                                                                         PayrollStatuses.Finalized)
+                                                {
+                                                    <li>
+
+                                                        <a class="dropdown-item"
+                                                           asp-action="Payslip"
+                                                           asp-route-id="@payroll.Id">
+
+                                                            <i class="bi bi-file-earmark-text me-2"></i>
+
+                                                            Payslip
+
+                                                        </a>
+
+                                                    </li>
+
+                                                    <li>
+
+                                                        <a class="dropdown-item"
+                                                           asp-action="PayslipPdf"
+                                                           asp-route-id="@payroll.Id">
+
+                                                            <i class="bi bi-file-earmark-pdf me-2"></i>
+
+                                                            Download PDF
+
+                                                        </a>
+
+                                                    </li>
+                                                }
+
+
+                                                <!-- Cancel -->
+                                                @if (payroll.Status ==
+                                                                                                         PayrollStatuses.Draft
+                                                                                                     ||
+                                                                                                     payroll.Status ==
+                                                                                                         PayrollStatuses.Calculated
+                                                                                                     ||
+                                                                                                     payroll.Status ==
+                                                                                                         PayrollStatuses.Approved)
+                                                {
+                                                    <li>
+                                                        <hr class="dropdown-divider" />
+                                                    </li>
+
+                                                    <li>
+
+                                                        <form asp-action="Cancel"
+                                                              asp-route-id="@payroll.Id"
+                                                              method="post">
+
+                                                            @Html.AntiForgeryToken()
+
+                                                            <button type="submit"
+                                                                    class="dropdown-item text-danger"
+                                                                    onclick="return confirm(
+                                                                'Cancel this payroll?');">
+
+                                                                <i class="bi bi-x-circle me-2"></i>
+
+                                                                Cancel
+
+                                                            </button>
+
+                                                        </form>
+
+                                                    </li>
+                                                }
+
+
+                                                <!-- Delete -->
+                                                @if (payroll.Status ==
+                                                                                                     PayrollStatuses.Draft)
+                                                {
+                                                    <li>
+
+                                                        <form asp-action="Delete"
+                                                              asp-route-id="@payroll.Id"
+                                                              method="post">
+
+                                                            @Html.AntiForgeryToken()
+
+                                                            <button type="submit"
+                                                                    class="dropdown-item text-danger"
+                                                                    onclick="return confirm(
+                                                                'Delete this payroll? This action cannot be undone.');">
+
+                                                                <i class="bi bi-trash me-2"></i>
+
+                                                                Delete
+
+                                                            </button>
+
+                                                        </form>
+
+                                                    </li>
+                                                }
+
+                                            </ul>
+
+                                        </div>
+
+                                    </td>
+
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+
+                                <td colspan="10"
+                                    class="text-center py-5">
+
+                                    <div class="text-muted">
+
+                                        <i class="bi bi-inbox fs-1 d-block mb-3"></i>
+
+                                        <h5>
+                                            No payroll records found
+                                        </h5>
+
+                                        <p class="mb-0">
+                                            Try changing your search
+                                            criteria or create a new
+                                            payroll record.
+                                        </p>
+
+                                    </div>
+
+                                </td>
+
+                            </tr>
+                        }
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+
+        <!-- ===================================================== -->
+        <!-- PAGINATION -->
+        <!-- ===================================================== -->
+        @if (Model.Payrolls.TotalCount > 0)
+        {
+            <div class="card-footer bg-white">
+
+                <div class="d-flex
+                    flex-wrap
+                    justify-content-between
+                    align-items-center">
+
+                    <div class="text-muted small">
+
+                        Showing
+                        <strong>@firstItem</strong>
+                        to
+                        <strong>@lastItem</strong>
+                        of
+                        <strong>
+                            @Model.Payrolls.TotalCount
+                        </strong>
+                        records
+
+                    </div>
+
+
+                    @if (totalPages > 1)
+                    {
+                        <nav aria-label="Payroll pagination">
+
+                            <ul class="pagination
+                                pagination-sm
+                                mb-0">
+
+                                <!-- Previous -->
+
+                                <li class="page-item
+                                    @(hasPreviousPage
+                                        ? ""
+                                        : "disabled")">
+
+                                    @if (hasPreviousPage)
+                                    {
+                                        <a class="page-link"
+                                           asp-action="Index"
+                                           asp-route-Search="@Model.Search"
+                                           asp-route-Status="@Model.Status"
+                                           asp-route-PayrollDateFrom="@Model.PayrollDateFrom?.ToString("yyyy-MM-dd")"
+                                           asp-route-PayrollDateTo="@Model.PayrollDateTo?.ToString("yyyy-MM-dd")"
+                                           asp-route-PageNumber="@(Model.Payrolls.PageNumber - 1)"
+                                           asp-route-PageSize="@Model.Payrolls.PageSize"
+                                           asp-route-SortBy="@Model.SortBy"
+                                           asp-route-SortDescending="@Model.SortDescending">
+
+                                            Previous
+
+                                        </a>
+                                    }
+                                    else
+                                    {
+                                        <span class="page-link">
+                                            Previous
+                                        </span>
+                                    }
+
+                                </li>
+
+
+                                <!-- Page Numbers -->
+                                @{
+                                    var startPage =
+                                        Math.Max(
+                                            1,
+                                            Model.Payrolls.PageNumber - 2);
+
+                                    var endPage =
+                                        Math.Min(
+                                            totalPages,
+                                            Model.Payrolls.PageNumber + 2);
+                                }
+
+                                @for (
+                                    var page = startPage;
+                                    page <= endPage;
+                                    page++)
+                                {
+                                    var currentPage =
+                                        page == Model.Payrolls.PageNumber;
+
+                                    <li class="page-item
+                                        @(currentPage
+                                            ? "active"
+                                            : "")">
+
+                                        @if (currentPage)
+                                        {
+                                            <span class="page-link">
+                                                @(page)
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <a class="page-link"
+                                               asp-action="Index"
+                                               asp-route-Search="@Model.Search"
+                                               asp-route-Status="@Model.Status"
+                                               asp-route-PayrollDateFrom="@Model.PayrollDateFrom?.ToString("yyyy-MM-dd")"
+                                               asp-route-PayrollDateTo="@Model.PayrollDateTo?.ToString("yyyy-MM-dd")"
+                                               asp-route-PageNumber="@(page)"
+                                               asp-route-PageSize="@Model.Payrolls.PageSize"
+                                               asp-route-SortBy="@Model.SortBy"
+                                               asp-route-SortDescending="@Model.SortDescending">
+
+                                                @(page)
+
+                                            </a>
+                                        }
+
+                                    </li>
+                                }
+
+
+                                <!-- Next -->
+
+                                <li class="page-item
+                                    @(hasNextPage
+                                        ? ""
+                                        : "disabled")">
+
+                                    @if (hasNextPage)
+                                    {
+                                        <a class="page-link"
+                                           asp-action="Index"
+                                           asp-route-Search="@Model.Search"
+                                           asp-route-Status="@Model.Status"
+                                           asp-route-PayrollDateFrom="@Model.PayrollDateFrom?.ToString("yyyy-MM-dd")"
+                                           asp-route-PayrollDateTo="@Model.PayrollDateTo?.ToString("yyyy-MM-dd")"
+                                           asp-route-PageNumber="@(Model.Payrolls.PageNumber + 1)"
+                                           asp-route-PageSize="@Model.Payrolls.PageSize"
+                                           asp-route-SortBy="@Model.SortBy"
+                                           asp-route-SortDescending="@Model.SortDescending">
+
+                                            Next
+
+                                        </a>
+                                    }
+                                    else
+                                    {
+                                        <span class="page-link">
+                                            Next
+                                        </span>
+                                    }
+
+                                </li>
+
+                            </ul>
+
+                        </nav>
+                    }
+
+                </div>
+
+            </div>
+        }
+
+    </div>
+
+</div>

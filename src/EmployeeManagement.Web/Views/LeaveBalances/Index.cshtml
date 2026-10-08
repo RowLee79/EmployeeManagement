@@ -1,0 +1,29 @@
+@using EmployeeManagement.Application.Employees.Models
+@using EmployeeManagement.Application.LeaveManagement.Models
+@using EmployeeManagement.Domain.Enums
+@model LeaveAllocationModel
+@{ ViewData["Title"] = "Leave Allocations";
+    var employees = (IReadOnlyList<EmployeeLookupModel>)ViewBag.Employees;
+    var balances = (IReadOnlyList<LeaveBalanceModel>)ViewBag.Balances;
+}
+<partial name="_Notifications" />
+<div class="card shadow-sm"><div class="card-body p-4">
+<h1 class="h4">Leave Allocations</h1>
+<form method="get" class="row g-3 my-3">
+<div class="col-md-6"><label class="form-label" for="browseEmployee">Employee</label><select id="browseEmployee" name="employeeId" class="form-select">
+<option value="">Select employee</option>
+@foreach(var employee in employees) { <option value="@employee.Id" selected="@(employee.Id == Model.EmployeeId)">@employee.EmployeeNumber — @employee.FullName</option> }
+</select></div><div class="col-md-3"><label class="form-label" for="browseYear">Year</label><input id="browseYear" name="year" type="number" min="2000" max="2100" value="@Model.Year" class="form-control" /></div>
+<div class="col-md-3 align-self-end"><button class="btn btn-outline-primary">View balances</button></div></form>
+<div class="table-responsive"><table class="table"><thead><tr><th>Type</th><th>Allocated</th><th>Used</th><th>Remaining</th></tr></thead><tbody>
+@foreach(var balance in balances) { <tr><td>@balance.LeaveType</td><td>@balance.AllocatedDays</td><td>@balance.UsedDays</td><td>@balance.RemainingDays</td></tr> }
+</tbody></table></div>
+@if(Model.EmployeeId > 0) {
+<form method="post" class="row g-3">
+<input type="hidden" asp-for="EmployeeId" /><input type="hidden" asp-for="Year" />
+<div asp-validation-summary="All" class="text-danger"></div>
+<div class="col-md-5"><label asp-for="LeaveType" class="form-label"></label><select asp-for="LeaveType" asp-items="Html.GetEnumSelectList<LeaveType>()" class="form-select"></select></div>
+<div class="col-md-4"><label asp-for="AllocatedDays" class="form-label"></label><input asp-for="AllocatedDays" class="form-control" /></div>
+<div class="col-md-3 align-self-end"><button class="btn btn-primary">Save allocation</button></div>
+</form> }
+</div></div>

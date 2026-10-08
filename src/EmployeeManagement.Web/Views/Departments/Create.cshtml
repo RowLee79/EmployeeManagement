@@ -1,0 +1,95 @@
+﻿@model EmployeeManagement.Application.Departments.Models.DepartmentCreateModel
+
+<div class="page-header">
+    <div>
+        <h1>Create Department</h1>
+        <p>Add a new department to the organization.</p>
+    </div>
+</div>
+
+<div class="card shadow-sm border-0">
+    <div class="card-body">
+
+        <form asp-action="Create" method="post">
+
+            @Html.AntiForgeryToken()
+
+            <div asp-validation-summary="ModelOnly"
+                 class="text-danger mb-3"></div>
+
+            <div class="row g-3">
+
+                <div class="col-md-4">
+                    <label asp-for="Code" class="form-label">
+                        Department Code
+                    </label>
+
+                    <input asp-for="Code"
+                           class="form-control"
+                           placeholder="e.g. IT" />
+
+                    <span asp-validation-for="Code"
+                          class="text-danger"></span>
+                </div>
+
+                <div class="col-md-8">
+                    <label asp-for="Name" class="form-label">
+                        Department Name
+                    </label>
+
+                    <input asp-for="Name"
+                           class="form-control"
+                           placeholder="e.g. Information Technology" />
+
+                    <span asp-validation-for="Name"
+                          class="text-danger"></span>
+                </div>
+
+                <div class="col-12">
+                    <label asp-for="Description"
+                           class="form-label">
+                        Description
+                    </label>
+
+                    <textarea asp-for="Description"
+                              class="form-control"
+                              rows="4"></textarea>
+                </div>
+
+                <div class="col-12">
+                    <div class="form-check">
+                        <input asp-for="IsActive"
+                               class="form-check-input" />
+
+                        <label asp-for="IsActive"
+                               class="form-check-label">
+                            Active
+                        </label>
+                    </div>
+                </div>
+
+            </div>
+
+            <hr class="my-4" />
+
+            <div class="d-flex gap-2">
+                <button type="submit"
+                        class="btn btn-primary">
+                    <i class="bi bi-check-lg"></i>
+                    Save Department
+                </button>
+
+                <a asp-action="Index"
+                   class="btn btn-light">
+                    Cancel
+                </a>
+            </div>
+
+        </form>
+
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

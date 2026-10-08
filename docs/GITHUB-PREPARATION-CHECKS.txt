@@ -1,0 +1,6 @@
+PASS JavaScript syntax checks
+PASS gallery missing-file handling, existing-only insertion, repeat-safe update
+PASS secrets/runtime uploads ignored; screenshot assets not ignored
+PASS README screenshot markers and referenced documentation
+PASS JSON and project/solution XML parsing
+UI screenshots not captured. GitHub push not performed.

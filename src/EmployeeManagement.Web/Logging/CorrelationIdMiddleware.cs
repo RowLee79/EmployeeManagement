@@ -1,0 +1,61 @@
+using Microsoft.Extensions.Primitives;
+
+namespace EmployeeManagement.Web.Logging;
+
+public class CorrelationIdMiddleware
+{
+    private const string HeaderName = "X-Correlation-ID";
+
+    private readonly RequestDelegate _next;
+
+    public CorrelationIdMiddleware(RequestDelegate next)
+    {
+        _next = next;
+    }
+
+    public async Task InvokeAsync(
+        HttpContext context,
+        ILogger<CorrelationIdMiddleware> logger)
+    {
+        var correlationId = GetOrCreateCorrelationId(context);
+
+        context.Items[HeaderName] = correlationId;
+
+        context.Response.OnStarting(() =>
+        {
+            if (!context.Response.Headers.ContainsKey(HeaderName))
+            {
+                context.Response.Headers.Append(
+                    HeaderName,
+                    correlationId);
+            }
+
+            return Task.CompletedTask;
+        });
+
+        using (logger.BeginScope(
+                   new Dictionary<string, object>
+                   {
+                       ["CorrelationId"] = correlationId
+                   }))
+        {
+            await _next(context);
+        }
+    }
+
+    private static string GetOrCreateCorrelationId(
+        HttpContext context)
+    {
+        if (context.Request.Headers.TryGetValue(
+                HeaderName,
+                out StringValues value) &&
+            !StringValues.IsNullOrEmpty(value))
+        {
+            var id = value.ToString();
+            if (id.Length <= 64 && id.All(c => char.IsAsciiLetterOrDigit(c) || c == '-' || c == '_'))
+                return id;
+        }
+
+        return Guid.NewGuid().ToString("N");
+    }
+}

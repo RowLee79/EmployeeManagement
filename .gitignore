@@ -1,0 +1,31 @@
+bin/
+obj/
+.vs/
+*.user
+*.suo
+TestResults/
+logs/
+publish/
+packages/
+*.log
+appsettings.Local.json
+
+# Frontend/screenshot dependencies
+node_modules/
+playwright-report/
+test-results/
+
+# Runtime employee photos are not source assets
+src/EmployeeManagement.Web/wwwroot/uploads/**
+!src/EmployeeManagement.Web/wwwroot/uploads/.gitkeep
+
+# Local secret and authentication files
+secrets.json
+.env
+.env.*
+!.env.example
+*.pfx
+*.p12
+*.key
+*.pem
+.auth/

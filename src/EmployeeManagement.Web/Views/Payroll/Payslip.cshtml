@@ -1,0 +1,573 @@
+@using EmployeeManagement.Application.Payroll.Models
+
+@model EmployeeManagement.Application.Payroll.Models.PayslipModel
+
+@{
+    ViewData["Title"] = "Payslip";
+
+    var isFinalized =
+        Model.Status == "Finalized";
+}
+
+<style>
+    .payslip-container {
+        max-width: 900px;
+        margin: 0 auto;
+    }
+
+    .payslip-paper {
+        background: #fff;
+        border: 1px solid #dee2e6;
+        padding: 40px;
+    }
+
+    .company-header {
+        text-align: center;
+        border-bottom: 2px solid #212529;
+        padding-bottom: 20px;
+        margin-bottom: 25px;
+    }
+
+    .company-name {
+        font-size: 28px;
+        font-weight: 700;
+    }
+
+    .payslip-title {
+        font-size: 22px;
+        font-weight: 600;
+        margin-top: 10px;
+    }
+
+    .employee-section {
+        margin-bottom: 25px;
+    }
+
+    .employee-label {
+        font-size: 12px;
+        color: #6c757d;
+        text-transform: uppercase;
+    }
+
+    .employee-value {
+        font-weight: 600;
+    }
+
+    .salary-table th {
+        background: #f8f9fa;
+    }
+
+    .net-salary {
+        font-size: 22px;
+        font-weight: 700;
+    }
+
+    .signature-section {
+        margin-top: 70px;
+    }
+
+    .signature-line {
+        border-top: 1px solid #212529;
+        width: 250px;
+        margin-top: 50px;
+        padding-top: 5px;
+    }
+
+    @@media print {
+
+        body {
+            background: #fff !important;
+        }
+
+        .no-print {
+            display: none !important;
+        }
+
+        .payslip-paper {
+            border: none;
+            padding: 0;
+        }
+
+        .payslip-container {
+            max-width: none;
+        }
+
+        .container,
+        .container-fluid {
+            max-width: none !important;
+            width: 100% !important;
+            padding: 0 !important;
+            margin: 0 !important;
+        }
+    }
+</style>
+
+
+<div class="container-fluid py-4">
+
+    <!-- Actions -->
+    <div class="d-flex
+        justify-content-between
+        align-items-center
+        mb-4
+        no-print">
+
+        <div>
+
+            <a asp-action="Details"
+               asp-route-id="@Model.PayrollId"
+               class="btn btn-outline-secondary">
+
+                <i class="bi bi-arrow-left me-1"></i>
+
+                Back to Payroll
+
+            </a>
+
+        </div>
+
+        <div class="d-flex gap-2">
+
+            <button type="button"
+                    class="btn btn-primary"
+                    onclick="window.print()">
+
+                <i class="bi bi-printer me-1"></i>
+
+                Print
+
+            </button>
+
+            <a asp-action="PayslipPdf"
+               asp-route-id="@Model.PayrollId"
+               class="btn btn-success">
+
+                <i class="bi bi-file-earmark-pdf me-1"></i>
+
+                Download PDF
+
+            </a>
+
+        </div>
+
+    </div>
+
+
+    <!-- Payslip -->
+
+    <div class="payslip-container">
+
+        <div class="payslip-paper">
+
+
+            <!-- Company Header -->
+
+            <div class="company-header">
+
+                <div class="company-name">
+                    Employee Management System
+                </div>
+
+                <div class="text-muted">
+                    Human Resources Department
+                </div>
+
+                <div class="payslip-title">
+                    PAYSLIP
+                </div>
+
+            </div>
+
+
+            <!-- Employee Information -->
+
+            <div class="employee-section">
+
+                <div class="row g-4">
+
+                    <div class="col-md-6">
+
+                        <div class="employee-label">
+                            Employee
+                        </div>
+
+                        <div class="employee-value">
+                            @Model.EmployeeName
+                        </div>
+
+                    </div>
+
+
+                    <div class="col-md-6">
+
+                        <div class="employee-label">
+                            Employee Number
+                        </div>
+
+                        <div class="employee-value">
+                            @Model.EmployeeNumber
+                        </div>
+
+                    </div>
+
+
+                    <div class="col-md-6">
+
+                        <div class="employee-label">
+                            Department
+                        </div>
+
+                        <div class="employee-value">
+                            @(Model.DepartmentName ?? "N/A")
+                        </div>
+
+                    </div>
+
+
+                    <div class="col-md-6">
+
+                        <div class="employee-label">
+                            Position
+                        </div>
+
+                        <div class="employee-value">
+                            @(Model.PositionName ?? "N/A")
+                        </div>
+
+                    </div>
+
+
+                    <div class="col-md-6">
+
+                        <div class="employee-label">
+                            Payroll Date
+                        </div>
+
+                        <div class="employee-value">
+                            @Model.PayrollDate.ToString("dd-MMM-yyyy")
+                        </div>
+
+                    </div>
+
+
+                    <div class="col-md-6">
+
+                        <div class="employee-label">
+                            Status
+                        </div>
+
+                        <div class="employee-value">
+
+                            @if (Model.Status == "Finalized")
+                            {
+                                <span class="badge bg-success">
+                                    Finalized
+                                </span>
+                            }
+                            else if (Model.Status == "Approved")
+                            {
+                                <span class="badge bg-warning text-dark">
+                                    Approved
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-secondary">
+                                    @Model.Status
+                                </span>
+                            }
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- Earnings -->
+
+            <h5 class="mb-3">
+                Earnings
+            </h5>
+
+            <div class="table-responsive mb-4">
+
+                <table class="table
+                    table-bordered
+                    salary-table">
+
+                    <thead>
+
+                        <tr>
+
+                            <th>
+                                Description
+                            </th>
+
+                            <th class="text-end">
+                                Amount
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                        <tr>
+
+                            <td>
+                                Basic Salary
+                            </td>
+
+                            <td class="text-end">
+                                ₱@Model.BasicSalary.ToString("N2")
+                            </td>
+
+                        </tr>
+
+                        <tr>
+
+                            <td>
+                                Overtime
+                            </td>
+
+                            <td class="text-end">
+                                ₱@Model.Overtime.ToString("N2")
+                            </td>
+
+                        </tr>
+
+                        <tr>
+
+                            <td>
+                                Allowances
+                            </td>
+
+                            <td class="text-end">
+                                ₱@Model.Allowances.ToString("N2")
+                            </td>
+
+                        </tr>
+
+                        <tr class="fw-bold">
+
+                            <td>
+                                Gross Salary
+                            </td>
+
+                            <td class="text-end">
+                                ₱@Model.GrossSalary.ToString("N2")
+                            </td>
+
+                        </tr>
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+
+            <!-- Deductions -->
+            <!-- Deductions -->
+
+            <h5 class="mb-3">
+                Deductions
+            </h5>
+
+            <div class="table-responsive mb-4">
+
+                <table class="table table-bordered salary-table">
+
+                    <thead>
+
+                        <tr>
+
+                            <th>
+                                Description
+                            </th>
+
+                            <th class="text-end">
+                                Amount
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                        <tr>
+
+                            <td>
+                                SSS
+                            </td>
+
+                            <td class="text-end">
+                                ₱@Model.Deductions.Sss.ToString("N2")
+                            </td>
+
+                        </tr>
+
+                        <tr>
+
+                            <td>
+                                PhilHealth
+                            </td>
+
+                            <td class="text-end">
+                                ₱@Model.Deductions.PhilHealth.ToString("N2")
+                            </td>
+
+                        </tr>
+
+                        <tr>
+
+                            <td>
+                                Pag-IBIG
+                            </td>
+
+                            <td class="text-end">
+                                ₱@Model.Deductions.PagIbig.ToString("N2")
+                            </td>
+
+                        </tr>
+
+                        <tr>
+
+                            <td>
+                                Withholding Tax
+                            </td>
+
+                            <td class="text-end">
+                                ₱@Model.Deductions.WithholdingTax.ToString("N2")
+                            </td>
+
+                        </tr>
+
+                        <tr>
+
+                            <td>
+                                Other Deductions
+                            </td>
+
+                            <td class="text-end">
+                                ₱@Model.Deductions.OtherDeductions.ToString("N2")
+                            </td>
+
+                        </tr>
+
+                        <tr class="fw-bold">
+
+                            <td>
+                                Total Deductions
+                            </td>
+
+                            <td class="text-end">
+                                ₱@Model.Deductions.TotalDeductions.ToString("N2")
+                            </td>
+
+                        </tr>
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+            <!-- Net Salary -->
+
+            <div class="row justify-content-end">
+
+                <div class="col-md-6">
+
+                    <table class="table table-bordered">
+
+                        <tr>
+
+                            <th>
+                                Gross Salary
+                            </th>
+
+                            <td class="text-end">
+                                ₱@Model.GrossSalary.ToString("N2")
+                            </td>
+
+                        </tr>
+
+                        <tr>
+
+                            <th>
+                                Deductions
+                            </th>
+
+                            <td class="text-end">
+                                ₱@Model.Deductions.TotalDeductions.ToString("N2")
+                            </td>
+
+                        </tr>
+
+                        <tr>
+
+                            <th>
+                                NET SALARY
+                            </th>
+
+                            <td class="text-end net-salary">
+                                ₱@Model.NetSalary.ToString("N2")
+                            </td>
+
+                        </tr>
+
+                    </table>
+
+                </div>
+
+            </div>
+
+            <!-- Signature -->
+
+            <div class="signature-section">
+
+                <div class="row">
+
+                    <div class="col-md-6">
+
+                        <div class="signature-line">
+                            Employee Signature
+                        </div>
+
+                    </div>
+
+                    <div class="col-md-6">
+
+                        <div class="signature-line">
+                            Authorized Signature
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- Footer -->
+
+            <div class="text-center
+                text-muted
+                small
+                mt-5">
+
+                This document is system generated.
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>

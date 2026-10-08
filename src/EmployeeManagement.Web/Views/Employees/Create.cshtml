@@ -1,0 +1,669 @@
+﻿@using EmployeeManagement.Application.Departments.Models
+@using EmployeeManagement.Application.Positions.Models
+@using EmployeeManagement.Domain.Enums
+
+@model EmployeeManagement.Application.Employees.Models.EmployeeCreateModel
+
+@{
+    ViewData["Title"] = "Create Employee";
+
+    var departments =
+        ViewBag.Departments
+        as IReadOnlyList<DepartmentLookup>
+        ?? Array.Empty<DepartmentLookup>();
+
+    var positions =
+        ViewBag.Positions
+        as IReadOnlyList<PositionLookup>
+        ?? Array.Empty<PositionLookup>();
+}
+
+<div class="container-fluid">
+
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+
+        <div>
+            <h2 class="mb-1">
+                Create Employee
+            </h2>
+
+            <p class="text-muted mb-0">
+                Add a new employee to the organization
+            </p>
+        </div>
+
+        <a asp-action="Index"
+           class="btn btn-outline-secondary">
+
+            <i class="bi bi-arrow-left me-1"></i>
+
+            Back
+
+        </a>
+
+    </div>
+
+
+    <form asp-action="Create"
+          method="post">
+
+        @Html.AntiForgeryToken()
+
+        <div asp-validation-summary="ModelOnly"
+             class="alert alert-danger"
+             role="alert">
+        </div>
+
+
+        <div class="row g-4">
+
+
+            <!-- ================================================= -->
+            <!-- PERSONAL INFORMATION                              -->
+            <!-- ================================================= -->
+
+            <div class="col-xl-6">
+
+                <div class="card border-0 shadow-sm">
+
+                    <div class="card-header bg-white border-0 pt-4 px-4">
+
+                        <h5 class="mb-0">
+
+                            <i class="bi bi-person me-2 text-primary"></i>
+
+                            Personal Information
+
+                        </h5>
+
+                    </div>
+
+                    <div class="card-body px-4">
+
+                        <div class="row g-3">
+
+
+                            <!-- Employee Number -->
+                            <div class="col-md-6">
+
+                                <label asp-for="EmployeeNumber"
+                                       class="form-label">
+                                </label>
+
+                                <input asp-for="EmployeeNumber"
+                                       class="form-control"
+                                       placeholder="EMP-000004" />
+
+                                <span asp-validation-for="EmployeeNumber"
+                                      class="text-danger">
+                                </span>
+
+                            </div>
+
+
+                            <!-- First Name -->
+                            <div class="col-md-6">
+
+                                <label asp-for="FirstName"
+                                       class="form-label">
+                                </label>
+
+                                <input asp-for="FirstName"
+                                       class="form-control"
+                                       placeholder="First name" />
+
+                                <span asp-validation-for="FirstName"
+                                      class="text-danger">
+                                </span>
+
+                            </div>
+
+
+                            <!-- Middle Name -->
+                            <div class="col-md-6">
+
+                                <label asp-for="MiddleName"
+                                       class="form-label">
+                                </label>
+
+                                <input asp-for="MiddleName"
+                                       class="form-control"
+                                       placeholder="Middle name" />
+
+                                <span asp-validation-for="MiddleName"
+                                      class="text-danger">
+                                </span>
+
+                            </div>
+
+
+                            <!-- Last Name -->
+                            <div class="col-md-6">
+
+                                <label asp-for="LastName"
+                                       class="form-label">
+                                </label>
+
+                                <input asp-for="LastName"
+                                       class="form-control"
+                                       placeholder="Last name" />
+
+                                <span asp-validation-for="LastName"
+                                      class="text-danger">
+                                </span>
+
+                            </div>
+
+
+                            <!-- Suffix -->
+                            <div class="col-md-4">
+
+                                <label asp-for="Suffix"
+                                       class="form-label">
+                                </label>
+
+                                <input asp-for="Suffix"
+                                       class="form-control"
+                                       placeholder="Jr." />
+
+                                <span asp-validation-for="Suffix"
+                                      class="text-danger">
+                                </span>
+
+                            </div>
+
+
+                            <!-- Birth Date -->
+                            <div class="col-md-4">
+
+                                <label asp-for="BirthDate"
+                                       class="form-label">
+                                </label>
+
+                                <input asp-for="BirthDate"
+                                       type="date"
+                                       class="form-control" />
+
+                                <span asp-validation-for="BirthDate"
+                                      class="text-danger">
+                                </span>
+
+                            </div>
+
+
+                            <!-- Gender -->
+                            <div class="col-md-4">
+
+                                <label asp-for="Gender"
+                                       class="form-label">
+                                </label>
+
+                                <select asp-for="Gender"
+                                        asp-items="Html.GetEnumSelectList<Gender>()"
+                                        class="form-select">
+
+                                    <option value="">
+                                        Select gender
+                                    </option>
+
+                                </select>
+
+                                <span asp-validation-for="Gender"
+                                      class="text-danger">
+                                </span>
+
+                            </div>
+
+
+                            <!-- Civil Status -->
+                            <div class="col-md-6">
+
+                                <label asp-for="CivilStatus"
+                                       class="form-label">
+                                </label>
+
+                                <select asp-for="CivilStatus"
+                                        asp-items="Html.GetEnumSelectList<CivilStatus>()"
+                                        class="form-select">
+
+                                    <option value="">
+                                        Select civil status
+                                    </option>
+
+                                </select>
+
+                                <span asp-validation-for="CivilStatus"
+                                      class="text-danger">
+                                </span>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- ================================================= -->
+            <!-- CONTACT INFORMATION                               -->
+            <!-- ================================================= -->
+
+            <div class="col-xl-6">
+
+                <div class="card border-0 shadow-sm">
+
+                    <div class="card-header bg-white border-0 pt-4 px-4">
+
+                        <h5 class="mb-0">
+
+                            <i class="bi bi-telephone me-2 text-primary"></i>
+
+                            Contact Information
+
+                        </h5>
+
+                    </div>
+
+                    <div class="card-body px-4">
+
+                        <div class="row g-3">
+
+
+                            <!-- Email -->
+                            <div class="col-12">
+
+                                <label asp-for="Email"
+                                       class="form-label">
+                                </label>
+
+                                <input asp-for="Email"
+                                       type="email"
+                                       class="form-control"
+                                       placeholder="employee@example.com" />
+
+                                <span asp-validation-for="Email"
+                                      class="text-danger">
+                                </span>
+
+                            </div>
+
+
+                            <!-- Phone -->
+                            <div class="col-md-6">
+
+                                <label asp-for="PhoneNumber"
+                                       class="form-label">
+                                </label>
+
+                                <input asp-for="PhoneNumber"
+                                       class="form-control"
+                                       placeholder="09123456789" />
+
+                                <span asp-validation-for="PhoneNumber"
+                                      class="text-danger">
+                                </span>
+
+                            </div>
+
+
+                            <!-- Address -->
+                            <div class="col-12">
+
+                                <label asp-for="Address"
+                                       class="form-label">
+                                </label>
+
+                                <textarea asp-for="Address"
+                                          class="form-control"
+                                          rows="4"
+                                          placeholder="Complete address">
+                                </textarea>
+
+                                <span asp-validation-for="Address"
+                                      class="text-danger">
+                                </span>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- ================================================= -->
+            <!-- EMPLOYMENT INFORMATION                            -->
+            <!-- ================================================= -->
+
+            <div class="col-xl-6">
+
+                <div class="card border-0 shadow-sm">
+
+                    <div class="card-header bg-white border-0 pt-4 px-4">
+
+                        <h5 class="mb-0">
+
+                            <i class="bi bi-briefcase me-2 text-primary"></i>
+
+                            Employment Information
+
+                        </h5>
+
+                    </div>
+
+                    <div class="card-body px-4">
+
+                        <div class="row g-3">
+
+
+                            <!-- Department -->
+                            <div class="col-md-6">
+
+                                <label asp-for="DepartmentId"
+                                       class="form-label">
+                                </label>
+
+                                <select asp-for="DepartmentId"
+                                        class="form-select"
+                                        id="DepartmentId">
+
+                                    <option value="">
+                                        Select department
+                                    </option>
+
+                                    @foreach (var department in departments)
+                                    {
+                                        <option value="@department.Id">
+                                            @department.Name
+                                        </option>
+                                    }
+
+                                </select>
+
+                                <span asp-validation-for="DepartmentId"
+                                      class="text-danger">
+                                </span>
+
+                            </div>
+
+
+                         <!-- Position -->
+                            <div class="col-md-6">
+
+                                <label asp-for="PositionId"
+                                       class="form-label">
+                                </label>
+
+                                <select asp-for="PositionId"
+                                        class="form-select"
+                                        id="PositionId">
+
+                                    <option value="">
+                                        Select position
+                                    </option>
+
+                                    @foreach (var position in positions)
+                                    {
+                                        <option value="@position.Id"
+                                                data-department-id="@position.DepartmentId">
+
+                                            @position.Name
+
+                                        </option>
+                                    }
+
+                                </select>
+
+                                <span asp-validation-for="PositionId"
+                                      class="text-danger">
+                                </span>
+
+                            </div>
+
+
+                            <!-- Employment Type -->
+                            <div class="col-md-6">
+
+                                <label asp-for="EmploymentType"
+                                       class="form-label">
+                                </label>
+
+                                <select asp-for="EmploymentType"
+                                        asp-items="Html.GetEnumSelectList<EmploymentType>()"
+                                        class="form-select">
+
+                                    <option value="">
+                                        Select employment type
+                                    </option>
+
+                                </select>
+
+                                <span asp-validation-for="EmploymentType"
+                                      class="text-danger">
+                                </span>
+
+                            </div>
+
+
+                            <!-- Status -->
+                            <div class="col-md-6">
+
+                                <label asp-for="Status"
+                                       class="form-label">
+                                </label>
+
+                                <select asp-for="Status"
+                                        asp-items="Html.GetEnumSelectList<EmployeeStatus>()"
+                                        class="form-select">
+
+                                    <option value="">
+                                        Select status
+                                    </option>
+
+                                </select>
+
+                                <span asp-validation-for="Status"
+                                      class="text-danger">
+                                </span>
+
+                            </div>
+
+
+                            <!-- Hire Date -->
+                            <div class="col-md-6">
+
+                                <label asp-for="HireDate"
+                                       class="form-label">
+                                </label>
+
+                                <input asp-for="HireDate"
+                                       type="date"
+                                       class="form-control" />
+
+                                <span asp-validation-for="HireDate"
+                                      class="text-danger">
+                                </span>
+
+                            </div>
+
+
+                            <!-- Regularization Date -->
+                            <div class="col-md-6">
+
+                                <label asp-for="RegularizationDate"
+                                       class="form-label">
+                                </label>
+
+                                <input asp-for="RegularizationDate"
+                                       type="date"
+                                       class="form-control" />
+
+                                <span asp-validation-for="RegularizationDate"
+                                      class="text-danger">
+                                </span>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- ================================================= -->
+            <!-- COMPENSATION                                      -->
+            <!-- ================================================= -->
+
+            <div class="col-xl-6">
+
+                <div class="card border-0 shadow-sm">
+
+                    <div class="card-header bg-white border-0 pt-4 px-4">
+
+                        <h5 class="mb-0">
+
+                            <i class="bi bi-cash-stack me-2 text-primary"></i>
+
+                            Compensation
+
+                        </h5>
+
+                    </div>
+
+                    <div class="card-body px-4">
+
+                        <div class="row g-3">
+
+                            <div class="col-md-8">
+
+                                <label asp-for="BasicSalary"
+                                       class="form-label">
+                                </label>
+
+                                <div class="input-group">
+
+                                    <span class="input-group-text">
+                                        ₱
+                                    </span>
+
+                                    <input asp-for="BasicSalary"
+                                           type="number"
+                                           step="0.01"
+                                           min="0"
+                                           class="form-control"
+                                           placeholder="0.00" />
+
+                                </div>
+
+                                <span asp-validation-for="BasicSalary"
+                                      class="text-danger">
+                                </span>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- Actions -->
+        <div class="d-flex justify-content-end gap-2 mt-4 mb-4">
+
+            <a asp-action="Index"
+               class="btn btn-outline-secondary">
+
+                Cancel
+
+            </a>
+
+            <button type="submit"
+                    class="btn btn-primary">
+
+                <i class="bi bi-check-lg me-1"></i>
+
+                Create Employee
+
+            </button>
+
+        </div>
+
+    </form>
+
+</div>
+
+
+@section Scripts {
+
+    <partial name="_ValidationScriptsPartial" />
+
+    <script>
+
+        document.addEventListener("DOMContentLoaded", function () {
+
+            const departmentSelect =
+                document.getElementById("DepartmentId");
+
+            const positionSelect =
+                document.getElementById("PositionId");
+
+            function filterPositions() {
+
+                const departmentId =
+                    departmentSelect.value;
+
+                const options =
+                    positionSelect.querySelectorAll(
+                        "option[data-department-id]");
+
+                options.forEach(function (option) {
+
+                    const optionDepartmentId =
+                        option.getAttribute(
+                            "data-department-id");
+
+                    option.hidden =
+                        departmentId !== "" &&
+                        optionDepartmentId !== departmentId;
+
+                });
+
+                const selectedOption =
+                    positionSelect.options[
+                        positionSelect.selectedIndex
+                    ];
+
+                if (
+                    selectedOption &&
+                    selectedOption.dataset.departmentId &&
+                    selectedOption.dataset.departmentId !== departmentId
+                ) {
+                    positionSelect.value = "";
+                }
+            }
+
+            departmentSelect.addEventListener(
+                "change",
+                filterPositions);
+
+            filterPositions();
+
+        });
+
+    </script>
+}

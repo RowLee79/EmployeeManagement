@@ -1,0 +1,1275 @@
+﻿@using EmployeeManagement.Application.Common
+@using EmployeeManagement.Application.Common.Models
+@using EmployeeManagement.Application.Departments.Models
+@using EmployeeManagement.Application.Employees.Models
+@using EmployeeManagement.Application.Positions.Models
+@using EmployeeManagement.Domain.Enums
+
+@model EmployeeIndexViewModel
+
+@{
+    ViewData["Title"] = "Employees";
+
+
+    int? ToNullableInt(object? value)
+    {
+        if (value is null)
+            return null;
+
+        if (value is int intValue)
+            return intValue;
+
+        if (value is Enum enumValue)
+            return Convert.ToInt32(enumValue);
+
+        if (int.TryParse(value.ToString(), out var parsedValue))
+            return parsedValue;
+
+        return null;
+    }
+
+    DateTime? ToNullableDate(object? value)
+    {
+        if (value is DateTime date)
+            return date;
+
+        if (DateTime.TryParse(
+                value?.ToString(),
+                out var parsedDate))
+        {
+            return parsedDate;
+        }
+
+        return null;
+    }
+
+
+    var search =
+        ViewBag.Search as string ?? string.Empty;
+
+    var selectedDepartmentId =
+        ToNullableInt(ViewBag.DepartmentId);
+
+    var selectedPositionId =
+        ToNullableInt(ViewBag.PositionId);
+
+    var selectedEmploymentType =
+        ToNullableInt(ViewBag.EmploymentType);
+
+    var selectedStatus =
+        ToNullableInt(ViewBag.Status);
+
+    var hireDateFrom =
+        ToNullableDate(ViewBag.HireDateFrom);
+
+    var hireDateTo =
+        ToNullableDate(ViewBag.HireDateTo);
+
+
+    // ============================================================
+    // PAGING
+    // ============================================================
+
+    var pageSize =
+        Model.PageSize <= 0
+            ? 10
+            : Model.PageSize;
+
+
+    // ============================================================
+    // SORTING
+    // ============================================================
+
+    var sortBy =
+        ViewBag.SortBy?.ToString() ?? "HireDate";
+
+    var sortDescending =
+        ViewBag.SortDescending is bool descending
+            ? descending
+            : true;
+}
+
+
+<div class="container-fluid py-4">
+
+    <!-- ============================================================
+         PAGE HEADER
+         ============================================================ -->
+
+    <div class="d-flex flex-column flex-md-row
+        justify-content-between
+        align-items-md-center
+        mb-4">
+
+        <div>
+            <h2 class="fw-bold mb-1">
+                <i class="bi bi-people me-2 text-primary"></i>
+                Employees
+            </h2>
+
+            <p class="text-muted mb-0">
+                Manage employee information and records.
+            </p>
+        </div>
+
+
+        <div class="d-flex flex-wrap gap-2 mt-3 mt-md-0">
+
+            <a asp-controller="Reports"
+               asp-action="Employees"
+               class="btn btn-outline-primary">
+
+                <i class="bi bi-file-earmark-bar-graph me-1"></i>
+
+                Employee Master List
+
+            </a>
+
+
+            @if (User.IsInRole("Administrator") ||
+                 User.IsInRole("HR Manager"))
+            {
+                <a asp-action="Create"
+                   class="btn btn-primary">
+
+                    <i class="bi bi-person-plus me-1"></i>
+
+                    Add Employee
+
+                </a>
+            }
+
+        </div>
+
+    </div>
+
+
+    <!-- ============================================================
+         SUCCESS MESSAGE
+         ============================================================ -->
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success
+            alert-dismissible
+            fade show"
+             role="alert">
+
+            <i class="bi bi-check-circle me-2"></i>
+
+            @TempData["SuccessMessage"]
+
+            <button type="button"
+                    class="btn-close"
+                    data-bs-dismiss="alert"
+                    aria-label="Close">
+            </button>
+
+        </div>
+    }
+
+
+    <!-- ============================================================
+         SEARCH & FILTERS
+         ============================================================ -->
+
+    <div class="card shadow-sm border-0 mb-4">
+
+        <div class="card-header bg-white py-3">
+
+            <div class="d-flex
+                justify-content-between
+                align-items-center">
+
+                <h5 class="mb-0 fw-semibold">
+
+                    <i class="bi bi-funnel me-2 text-primary"></i>
+
+                    Employee Search & Filters
+
+                </h5>
+
+
+                <button type="button"
+                        class="btn btn-sm btn-outline-secondary"
+                        id="clearFiltersButton">
+
+                    <i class="bi bi-arrow-counterclockwise me-1"></i>
+
+                    Clear Filters
+
+                </button>
+
+            </div>
+
+        </div>
+
+
+        <div class="card-body">
+
+            <form id="employeeSearchForm">
+
+                <div class="row g-3">
+
+                    <!-- ==================================================
+                         SEARCH
+                         ================================================== -->
+
+                    <div class="col-lg-4 col-md-6">
+
+                        <label for="Search"
+                               class="form-label fw-semibold">
+
+                            Search
+
+                        </label>
+
+                        <div class="input-group">
+
+                            <span class="input-group-text">
+                                <i class="bi bi-search"></i>
+                            </span>
+
+                            <input type="text"
+                                   id="Search"
+                                   name="Search"
+                                   value="@Model.Search"
+                                   class="form-control"
+                                   autocomplete="off"
+                                   placeholder="Employee number, name, email..." />
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- ==================================================
+                         DEPARTMENT
+                         ================================================== -->
+
+                    <div class="col-lg-2 col-md-6">
+
+                        <label for="DepartmentId"
+                               class="form-label fw-semibold">
+
+                            Department
+
+                        </label>
+
+                        <select id="DepartmentId"
+                                name="DepartmentId"
+                                class="form-select">
+
+                            <option value="">
+                                All Departments
+                            </option>
+
+                            @foreach (var department in Model.Departments)
+                            {
+                                <option value="@department.Id"
+                                        selected="@(Model.DepartmentId == department.Id ? "selected" : null)">
+
+                                    @department.Name
+
+                                </option>
+                            }
+
+                        </select>
+
+                    </div>
+
+
+                    <!-- ==================================================
+                         POSITION
+                         ================================================== -->
+
+                    <div class="col-lg-2 col-md-6">
+
+                        <label for="PositionId"
+                               class="form-label fw-semibold">
+
+                            Position
+
+                        </label>
+
+                        <select id="PositionId"
+                                name="PositionId"
+                                class="form-select">
+
+                            <option value="">
+                                All Positions
+                            </option>
+
+                            @foreach (var position in Model.Positions)
+                            {
+                                <option value="@position.Id"
+                                        data-department-id="@position.DepartmentId"
+                                        selected="@(Model.PositionId == position.Id ? "selected" : null)">
+
+                                    @position.Name
+
+                                </option>
+                            }
+
+                        </select>
+
+                    </div>
+
+
+                    <!-- ==================================================
+                         EMPLOYMENT TYPE
+                         ================================================== -->
+
+                    <div class="col-lg-2 col-md-6">
+
+                        <label for="EmploymentType"
+                               class="form-label fw-semibold">
+
+                            Employment Type
+
+                        </label>
+
+                        <select id="EmploymentType"
+                                name="EmploymentType"
+                                class="form-select">
+
+                            <option value="">
+                                All Types
+                            </option>
+
+                            @foreach (var item in
+                                     Html.GetEnumSelectList<EmploymentType>())
+                            {
+                                var itemValue =
+                                    Convert.ToInt32(item.Value);
+
+                                <option value="@itemValue"
+                                        selected="@(Model.EmploymentType.HasValue &&
+                                                                (int)Model.EmploymentType.Value == itemValue
+                                                        ? "selected"
+                                                        : null)">
+                                    @item.Text
+                                </option>
+                            }
+
+                        </select>
+
+                    </div>
+
+
+                    <!-- ==================================================
+                         STATUS
+                         ================================================== -->
+
+                    <div class="col-lg-2 col-md-6">
+
+                        <label for="Status"
+                               class="form-label fw-semibold">
+
+                            Status
+
+                        </label>
+
+                        <select id="Status"
+                                name="Status"
+                                class="form-select">
+
+                            <option value="">
+                                All Statuses
+                            </option>
+
+                            @foreach (var item in
+                                     Html.GetEnumSelectList<EmployeeStatus>())
+                            {
+                                var itemValue =
+                                    Convert.ToInt32(item.Value);
+
+                                <option value="@itemValue"
+                                        selected="@(Model.Status.HasValue &&
+                                                                (int)Model.Status.Value == itemValue
+                                                        ? "selected"
+                                                        : null)">
+                                    @item.Text
+                                </option>
+                            }
+
+                        </select>
+
+                    </div>
+
+
+                    <!-- ==================================================
+                         HIRE DATE FROM
+                         ================================================== -->
+
+                    <div class="col-lg-2 col-md-6">
+
+                        <label for="HireDateFrom"
+                               class="form-label fw-semibold">
+
+                            Hire Date From
+
+                        </label>
+                        <input type="date"
+                               id="HireDateFrom"
+                               name="HireDateFrom"
+                               value="@(Model.HireDateFrom?.ToString("yyyy-MM-dd") ?? string.Empty)"
+                               class="form-control" />
+
+                    </div>
+
+
+                    <!-- ==================================================
+                         HIRE DATE TO
+                         ================================================== -->
+
+                    <div class="col-lg-2 col-md-6">
+
+                        <label for="HireDateTo"
+                               class="form-label fw-semibold">
+
+                            Hire Date To
+
+                        </label>
+
+                        <input type="date"
+                               id="HireDateTo"
+                               name="HireDateTo"
+                               value="@(Model.HireDateTo?.ToString("yyyy-MM-dd") ?? string.Empty)"
+                               class="form-control" />
+
+                    </div>
+
+
+                    <!-- ==================================================
+                         PAGE SIZE
+                         ================================================== -->
+
+                    <div class="col-lg-2 col-md-6">
+
+                        <label for="PageSize"
+                               class="form-label fw-semibold">
+
+                            Page Size
+
+                        </label>
+
+                        <select id="PageSize"
+                                name="PageSize"
+                                class="form-select">
+
+                            @foreach (var size in new[] { 10, 25, 50, 100 })
+                            {
+                                <option value="@size"
+                                        selected="@(Model.Employees.PageSize == size
+                                                        ? "selected"
+                                                        : null)">
+                                    @size
+                                </option>
+                            }
+
+                        </select>
+
+                    </div>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+
+    <!-- ============================================================
+         EMPLOYEE RESULTS
+         ============================================================ -->
+
+    <div id="employeeResultsWrapper"
+         class="position-relative">
+
+
+        <!-- Loading Overlay -->
+
+        <div id="employeeLoading"
+             class="position-absolute
+            top-0
+            start-0
+            w-100
+            h-100
+            d-none
+            align-items-center
+            justify-content-center"
+             style="z-index:10;
+            background:rgba(255,255,255,0.75);">
+
+            <div class="text-center">
+
+                <div class="spinner-border text-primary"
+                     role="status">
+
+                    <span class="visually-hidden">
+                        Loading...
+                    </span>
+
+                </div>
+
+                <div class="mt-2 text-muted small">
+                    Loading employees...
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- Results -->
+
+        <div id="employeeResults">
+
+            @await Html.PartialAsync(
+                "_EmployeeResults",
+                Model.Employees)
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- ================================================================
+     DELETE EMPLOYEE MODAL
+     ================================================================ -->
+
+<div class="modal fade"
+     id="deleteEmployeeModal"
+     tabindex="-1"
+     aria-labelledby="deleteEmployeeModalLabel"
+     aria-hidden="true">
+
+    <div class="modal-dialog modal-dialog-centered">
+
+        <div class="modal-content">
+
+
+            <!-- Header -->
+
+            <div class="modal-header">
+
+                <h5 class="modal-title"
+                    id="deleteEmployeeModalLabel">
+
+                    <i class="bi bi-trash text-danger me-2"></i>
+
+                    Delete Employee
+
+                </h5>
+
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal"
+                        aria-label="Close">
+                </button>
+
+            </div>
+
+
+            <!-- Body -->
+
+            <div class="modal-body">
+
+                <div class="text-center mb-3">
+
+                    <div class="display-5 text-danger">
+
+                        <i class="bi bi-exclamation-triangle"></i>
+
+                    </div>
+
+                </div>
+
+
+                <p class="text-center mb-2">
+                    Are you sure you want to delete:
+                </p>
+
+
+                <h5 class="text-center fw-bold"
+                    id="deleteEmployeeName">
+
+                    Employee
+
+                </h5>
+
+
+                <div class="alert alert-warning mt-3 mb-0">
+
+                    <i class="bi bi-info-circle me-1"></i>
+
+                    This employee will be marked as deleted
+                    and will no longer appear in the employee list.
+
+                </div>
+
+            </div>
+
+
+            <!-- Footer -->
+
+            <div class="modal-footer">
+
+                <button type="button"
+                        class="btn btn-secondary"
+                        data-bs-dismiss="modal">
+
+                    Cancel
+
+                </button>
+
+
+                <form id="deleteEmployeeForm"
+                      method="post">
+
+                    @Html.AntiForgeryToken()
+
+                    <button type="submit"
+                            class="btn btn-danger">
+
+                        <i class="bi bi-trash me-1"></i>
+
+                        Delete Employee
+
+                    </button>
+
+                </form>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+@section Scripts {
+
+    <script>
+
+        // ============================================================
+        // ELEMENTS
+        // ============================================================
+
+        const searchForm =
+            document.getElementById("employeeSearchForm");
+
+        const employeeResults =
+            document.getElementById("employeeResults");
+
+        const employeeLoading =
+            document.getElementById("employeeLoading");
+
+        const departmentSelect =
+            document.getElementById("DepartmentId");
+
+        const positionSelect =
+            document.getElementById("PositionId");
+
+        const searchInput =
+            document.getElementById("Search");
+
+        const clearFiltersButton =
+            document.getElementById("clearFiltersButton");
+
+        const pageSizeSelect =
+            document.getElementById("PageSize");
+
+
+        // ============================================================
+        // REQUEST STATE
+        // ============================================================
+
+        let currentRequest = null;
+        let searchTimer = null;
+
+
+        // ============================================================
+        // LOADING
+        // ============================================================
+
+        function setLoading(isLoading) {
+
+            if (!employeeLoading) {
+                return;
+            }
+
+            employeeLoading.classList.toggle(
+                "d-none",
+                !isLoading);
+
+            employeeLoading.classList.toggle(
+                "d-flex",
+                isLoading);
+        }
+
+
+        // ============================================================
+        // POSITION FILTER
+        // ============================================================
+
+        function filterPositions() {
+
+            if (!departmentSelect || !positionSelect) {
+                return;
+            }
+
+            const departmentId =
+                departmentSelect.value;
+
+            const options =
+                positionSelect.querySelectorAll(
+                    "option[data-department-id]");
+
+
+            options.forEach(option => {
+
+                const optionDepartmentId =
+                    option.dataset.departmentId;
+
+                const shouldShow =
+                    departmentId === "" ||
+                    optionDepartmentId === departmentId;
+
+                option.hidden = !shouldShow;
+                option.disabled = !shouldShow;
+
+            });
+
+
+            // Clear position if it does not belong
+            // to the selected department.
+
+            const selectedOption =
+                positionSelect.options[
+                    positionSelect.selectedIndex];
+
+
+            if (
+                selectedOption &&
+                selectedOption.dataset.departmentId &&
+                departmentId !== "" &&
+                selectedOption.dataset.departmentId !== departmentId
+            ) {
+                positionSelect.value = "";
+            }
+
+        }
+
+
+        // ============================================================
+        // BUILD SEARCH PARAMETERS
+        // ============================================================
+
+        function buildSearchParams(page) {
+
+            const params =
+                new URLSearchParams();
+
+
+            params.set(
+                "PageNumber",
+                page.toString());
+
+
+            params.set(
+                "PageSize",
+                pageSizeSelect.value);
+
+
+            const filters = {
+                Search:
+                    searchInput.value.trim(),
+
+                DepartmentId:
+                    departmentSelect.value,
+
+                PositionId:
+                    positionSelect.value,
+
+                EmploymentType:
+                    document.getElementById(
+                        "EmploymentType").value,
+
+                Status:
+                    document.getElementById(
+                        "Status").value,
+
+                HireDateFrom:
+                    document.getElementById(
+                        "HireDateFrom").value,
+
+                HireDateTo:
+                    document.getElementById(
+                        "HireDateTo").value
+            };
+
+
+            Object.entries(filters)
+                .forEach(([key, value]) => {
+
+                    if (value) {
+                        params.set(key, value);
+                    }
+
+                });
+
+
+            // ========================================================
+            // SORTING
+            // ========================================================
+
+            const activeSort =
+                document.querySelector(
+                    "#employeeResults .sort-link.active");
+
+
+            const activeSortBy =
+                activeSort?.getAttribute(
+                    "data-sort-by");
+
+
+            const activeSortDescending =
+                activeSort?.getAttribute(
+                    "data-sort-descending");
+
+
+            params.set(
+                "SortBy",
+                activeSortBy || "@sortBy");
+
+
+            params.set(
+                "SortDescending",
+                activeSortDescending ??
+                "@sortDescending.ToString().ToLowerInvariant()");
+
+
+            return params;
+        }
+
+
+        // ============================================================
+        // LOAD EMPLOYEES
+        // ============================================================
+
+        async function loadEmployees(page = 1) {
+
+            // Cancel previous request.
+
+            if (currentRequest) {
+                currentRequest.abort();
+            }
+
+
+            const params =
+                buildSearchParams(page);
+
+
+            const url =
+                '@Url.Action("Search", "Employees")'
+                + "?"
+                + params.toString();
+
+
+            const controller =
+                new AbortController();
+
+
+            currentRequest =
+                controller;
+
+
+            setLoading(true);
+
+
+            try {
+
+                const response =
+                    await fetch(
+                        url,
+                        {
+                            method: "GET",
+
+                            headers: {
+                                "X-Requested-With":
+                                    "XMLHttpRequest"
+                            },
+
+                            signal:
+                                controller.signal
+                        });
+
+
+                if (!response.ok) {
+                    throw new Error(
+                        "Failed to load employees.");
+                }
+
+
+                const html =
+                    await response.text();
+
+
+                employeeResults.innerHTML =
+                    html;
+
+
+                bindResultEvents();
+
+            }
+            catch (error) {
+
+                if (error.name !== "AbortError") {
+
+                    console.error(error);
+
+                    employeeResults.innerHTML = `
+                        <div class="alert alert-danger">
+                            <i class="bi bi-exclamation-triangle me-2"></i>
+                            Unable to load employees.
+                        </div>
+                    `;
+                }
+
+            }
+            finally {
+
+                if (currentRequest === controller) {
+
+                    currentRequest = null;
+
+                    setLoading(false);
+                }
+
+            }
+
+        }
+
+
+        // ============================================================
+        // DEBOUNCE SEARCH
+        // ============================================================
+
+        function debounceSearch() {
+
+            clearTimeout(searchTimer);
+
+
+            searchTimer =
+                setTimeout(
+                    () => loadEmployees(1),
+                    400);
+
+        }
+
+
+        // ============================================================
+        // RESULT EVENTS
+        // ============================================================
+
+        function bindResultEvents() {
+
+            // --------------------------------------------------------
+            // SORTING
+            // --------------------------------------------------------
+
+            document
+                .querySelectorAll(
+                    "#employeeResults .sort-link")
+                .forEach(link => {
+
+                    link.addEventListener(
+                        "click",
+                        function (event) {
+
+                            event.preventDefault();
+
+
+                            const sortBy =
+                                this.getAttribute(
+                                    "data-sort-by");
+
+
+                            const sortDescending =
+                                this.getAttribute(
+                                    "data-sort-descending");
+
+
+                            document
+                                .querySelectorAll(
+                                    "#employeeResults .sort-link")
+                                .forEach(item => {
+
+                                    item.classList.remove(
+                                        "active");
+
+                                });
+
+
+                            this.classList.add(
+                                "active");
+
+
+                            this.setAttribute(
+                                "data-sort-by",
+                                sortBy);
+
+
+                            this.setAttribute(
+                                "data-sort-descending",
+                                sortDescending);
+
+
+                            loadEmployees(1);
+
+                        });
+
+                });
+
+
+            // --------------------------------------------------------
+            // PAGINATION
+            // --------------------------------------------------------
+
+            document
+                .querySelectorAll(
+                    "#employeeResults .ajax-page-link")
+                .forEach(link => {
+
+                    link.addEventListener(
+                        "click",
+                        function (event) {
+
+                            event.preventDefault();
+
+
+                            const page =
+                                parseInt(
+                                    this.getAttribute(
+                                        "data-page"));
+
+
+                            if (!Number.isNaN(page)) {
+                                loadEmployees(page);
+                            }
+
+                        });
+
+                });
+
+        }
+
+
+        // ============================================================
+        // FILTER EVENTS
+        // ============================================================
+
+        [
+            "PositionId",
+            "EmploymentType",
+            "Status",
+            "HireDateFrom",
+            "HireDateTo",
+            "PageSize"
+        ]
+        .forEach(id => {
+
+            const element =
+                document.getElementById(id);
+
+
+            if (!element) {
+                return;
+            }
+
+
+            element.addEventListener(
+                "change",
+                () => loadEmployees(1));
+
+        });
+
+
+        // ============================================================
+        // DEPARTMENT CHANGE
+        // ============================================================
+
+        if (departmentSelect) {
+
+            departmentSelect.addEventListener(
+                "change",
+                () => {
+
+                    filterPositions();
+
+                    loadEmployees(1);
+
+                });
+
+        }
+
+
+        // ============================================================
+        // SEARCH
+        // ============================================================
+
+        if (searchInput) {
+
+            searchInput.addEventListener(
+                "input",
+                debounceSearch);
+
+        }
+
+
+        // ============================================================
+        // CLEAR FILTERS
+        // ============================================================
+
+        if (clearFiltersButton) {
+
+            clearFiltersButton.addEventListener(
+                "click",
+                () => {
+
+                    searchInput.value = "";
+
+                    departmentSelect.value = "";
+
+                    positionSelect.value = "";
+
+                    document.getElementById(
+                        "EmploymentType").value = "";
+
+                    document.getElementById(
+                        "Status").value = "";
+
+                    document.getElementById(
+                        "HireDateFrom").value = "";
+
+                    document.getElementById(
+                        "HireDateTo").value = "";
+
+                    pageSizeSelect.value = "10";
+
+
+                    filterPositions();
+
+                    loadEmployees(1);
+
+                });
+
+        }
+
+
+        // ============================================================
+        // DELETE EMPLOYEE
+        // ============================================================
+
+        let deleteEmployeeModal = null;
+
+
+        const deleteModalElement =
+            document.getElementById(
+                "deleteEmployeeModal");
+
+
+        const deleteEmployeeName =
+            document.getElementById(
+                "deleteEmployeeName");
+
+
+        const deleteEmployeeForm =
+            document.getElementById(
+                "deleteEmployeeForm");
+
+
+        if (deleteModalElement) {
+
+            deleteEmployeeModal =
+                new bootstrap.Modal(
+                    deleteModalElement);
+
+        }
+
+
+        // ------------------------------------------------------------
+        // EVENT DELEGATION
+        // ------------------------------------------------------------
+
+        document.addEventListener(
+            "click",
+            event => {
+
+                const button =
+                    event.target.closest(
+                        ".delete-employee-btn");
+
+
+                if (!button) {
+                    return;
+                }
+
+
+                const employeeId =
+                    button.getAttribute(
+                        "data-id");
+
+
+                const employeeName =
+                    button.getAttribute(
+                        "data-name");
+
+
+                if (deleteEmployeeName) {
+
+                    deleteEmployeeName.textContent =
+                        employeeName;
+
+                }
+
+
+                if (deleteEmployeeForm) {
+
+                    deleteEmployeeForm.action =
+                        `/Employees/Delete/${employeeId}`;
+
+                }
+
+
+                if (deleteEmployeeModal) {
+
+                    deleteEmployeeModal.show();
+
+                }
+
+            });
+
+
+        // ============================================================
+        // INITIALIZATION
+        // ============================================================
+
+        document.addEventListener(
+            "DOMContentLoaded",
+            () => {
+
+                filterPositions();
+
+                bindResultEvents();
+
+            });
+
+    </script>
+
+}
